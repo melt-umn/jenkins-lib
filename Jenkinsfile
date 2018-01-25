@@ -2,8 +2,8 @@
 library "github.com/melt-umn/jenkins-lib@${env.BRANCH_NAME}"
 
 node {
-  echo "Begin test"
-  melt.act()
-  echo "VAR: ${melt.CONSTANT}"
+  // Can we successfully access these constants:
+  echo "${melt.ARTIFACTS}"
+  echo "${melt.SILVER_WORKSPACE}"
 }
 

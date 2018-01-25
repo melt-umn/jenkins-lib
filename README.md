@@ -9,13 +9,13 @@ In a `Jenkinsfile`, write:
 
 ```
 // Get the 'melt' variable in scope:
-library 'github.com/melt-umn/jenkins-lib'
+library "github.com/melt-umn/jenkins-lib"
 ```
 
 From there, you may call/access the functions/variables you find in `vars/melt.groovy`. The above imports a `melt` object, and so variables and methods you see in that file will be on that object. For example:
 
 ```
-melt.notify(currentBuild.result)
+melt.notify('silver')
 ```
 
 This will call the `notify` method in `vars/melt.groovy`.
