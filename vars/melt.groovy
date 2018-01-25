@@ -1,4 +1,6 @@
 
+import jenkins.model.Jenkins
+
 // Location where we dump stable artifacts: jars, tarballs
 @groovy.transform.Field
 ARTIFACTS = '/export/scratch/melt-jenkins/custom-stable-dump'
@@ -107,4 +109,14 @@ def buildJob(job, parameters=[:]) {
   }
   build(job: job, parameters: using)
 }
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Find out if a job exists
+//
+def doesJobExist(job) {
+  echo "${jenkins.model.Jenkins.instance.getJobNames}"
+  return false
+}
+
 

@@ -5,5 +5,8 @@ node {
   // Can we successfully access these constants:
   echo "${melt.ARTIFACTS}"
   echo "${melt.SILVER_WORKSPACE}"
+  echo "${melt.doesJobExist('asdfasdf')}"
+  echo "${melt.doesJobExist('x-metaII-artifacts')}"
+  echo "${melt.doesJobExist('/melt-umn/silver/develop')}"
 }
 
