@@ -1,0 +1,10 @@
+// Define a few constants:
+CONSTANT='test'
+
+// Define a few functions:
+def act() {
+  echo "Act called. Found ${env.BRANCH_NAME}"
+  echo "Test #${currentBuild.getNumber()}"
+}
+
+
