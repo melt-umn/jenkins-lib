@@ -1,4 +1,5 @@
 // Define a few constants:
+@groovy.transform.Field
 CONSTANT='test'
 
 // Define a few functions:
