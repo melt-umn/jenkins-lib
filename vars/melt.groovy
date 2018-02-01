@@ -115,7 +115,28 @@ def buildJob(job, parameters=[:]) {
 // Find out if a job exists
 //
 def doesJobExist(job) {
-  echo "${jenkins.model.Jenkins.instance.getJobNames}"
+  // This is a completely ridiculous way to do this, but I can't see another way at the moment
+  // due to the sandbox we're placed in here.
+  
+  def parts = job.split('/')
+  def root = '/var/lib/jenkins/jobs/'
+  // 'jobname'
+  if (parts.length == 1) {
+    return fileExists(root + parts[0])
+  }
+  // '/jobname'
+  if (parts.length == 2) {
+    assert parts[0] == ''
+    return fileExists(root + parts[1])
+  }
+  // '/path/repo/branch' (okay because in branch names / becomes %2F)
+  if (parts.length == 4) {
+    assert parts[0] == ''
+    // potentially very fragile, because maybe they change this in the future, but oh well
+    return 0 == sh(returnStatus: true, script: "(cd ${root}${parts[1]}/jobs/${parts[2]}/branches && grep '${parts[3]}' */name-utf8.txt)")
+  }
+  
+  error("melt.doesJobExist cannot understand '${job}'")
   return false
 }
 
