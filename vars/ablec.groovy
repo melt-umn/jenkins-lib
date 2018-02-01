@@ -103,7 +103,7 @@ def buildNormalExtension(extension_name, extensions=[]) {
 
     stage ("Build") {
 
-      newenv = ablec.prepareWorkspace(extension_name, extensions)
+      newenv = prepareWorkspace(extension_name, extensions)
 
       withEnv(newenv) {
         dir("extensions/${extension_name}") {
