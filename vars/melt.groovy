@@ -19,7 +19,7 @@ SILVER_WORKSPACE = '/export/scratch/melt-jenkins/custom-silver'
 //
 def notify(Map args) {
   args = [
-    ignoreBranches = false
+    ignoreBranches: false
   ] + args
   assert args.job // required: name of the job
   
@@ -86,7 +86,6 @@ def setProperties(Map args) {
   }
   
   if (args.ablecBase) {
-    echo "debug check: set ablec parameters"
     // Where to look to find AbleC sources
     params << string(name: 'ABLEC_BASE',
                      defaultValue: 'ableC',

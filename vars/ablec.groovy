@@ -86,3 +86,67 @@ def prepareWorkspace(name, extensions=[]) {
   return newenv
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//
+// A normal AbleC extension build.
+//
+// extension_name: the name of this extension, the 'scm' object should reference
+//
+def buildNormalExtension(extension_name, extensions=[]) {
+
+  melt.setProperties(silverBase: true, ablecBase: true)
+
+  node {
+  try {
+
+    def newenv // visible scope to all stages
+
+    stage ("Build") {
+
+      newenv = ablec.prepareWorkspace(extension_name, extensions)
+
+      withEnv(newenv) {
+        dir("extensions/${extension_name}") {
+          sh "make clean build"
+        }
+      }
+    }
+
+    stage ("Examples") {
+      withEnv(newenv) {
+        dir("extensions/${extension_name}") {
+          sh "make examples"
+        }
+      }
+    }
+
+    stage ("Modular Analyses") {
+      withEnv(newenv) {
+        dir("extensions/${extension_name}") {
+          /* use -B option to always run analyses */
+          sh "make -B analyses"
+        }
+      }
+    }
+
+    stage ("Test") {
+      withEnv(newenv) {
+        dir("extensions/${extension_name}") {
+          /* use -B option to always run tests */
+          sh "make -B test"
+        }
+      }
+    }
+
+    /* If we've gotten all this way with a successful build, don't take up disk space */
+    sh "rm -rf generated/* || true"
+  }
+  catch (e) {
+    melt.handle(e)
+  }
+  finally {
+    melt.notify(job: extension_name)
+  }
+  } // node
+}
+
