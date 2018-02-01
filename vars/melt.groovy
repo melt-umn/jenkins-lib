@@ -23,25 +23,37 @@ def notify(Map args) {
   ] + args
   assert args.job // required: name of the job
   
-  if (currentBuild.result != 'FAILURE') {
-    return
-  }
   if (args.ignoreBranches && env.BRANCH_NAME != 'develop' && env.BRANCH_NAME != 'master') {
     return
   }
 
-  def subject = "Build failed: '${args.job}' (${env.BRANCH_NAME}) [${env.BUILD_NUMBER}]"
+  def status
+  def color
+  if (currentBuild.result == 'FAILURE') {
+    status = 'failed'
+    color = '#B00000'
+  } else {
+    def previousResult = currentBuild.previousBuild?.result
+    if (currentBuild.result == null && previousResult && previousResult == 'FAILURE') {
+      status = 'back to normal'
+      color = '#00B000'
+    } else {
+      // No notification of continued success
+      return
+    }
+  }
+
+  def subject = "Build ${status}: '${args.job}' (${env.BRANCH_NAME}) [${env.BUILD_NUMBER}]"
   def body = """${env.BUILD_URL}"""
   emailext(
     subject: subject,
     body: body,
+    to: 'evw@umn.edu', // Eric always wants to be notified.
     recipientProviders: [[$class: 'CulpritsRecipientProvider']]
   )
   //mimeType: 'text/html', // Stick to text for now
-  //to: 'evw@umn.edu', // Do we want to spam Eric?
   
-  // I'm not on slack, comment from someone who is?
-  //slackSend(color: '#B00000', message: "${subject} ${body}")
+  slackSend(color: color, message: "${subject} ${body}")
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -118,35 +130,4 @@ def buildJob(job, parameters=[:]) {
   }
   build(job: job, parameters: using)
 }
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// Find out if a job exists
-//
-def doesJobExist(job) {
-  // This is a completely ridiculous way to do this, but I can't see another way at the moment
-  // due to the sandbox we're placed in here.
-  
-  def parts = job.split('/')
-  def root = '/var/lib/jenkins/jobs/'
-  // 'jobname'
-  if (parts.length == 1) {
-    return fileExists(root + parts[0])
-  }
-  // '/jobname'
-  if (parts.length == 2) {
-    assert parts[0] == ''
-    return fileExists(root + parts[1])
-  }
-  // '/path/repo/branch' (okay because in branch names / becomes %2F)
-  if (parts.length == 4) {
-    assert parts[0] == ''
-    // potentially very fragile, because maybe they change this in the future, but oh well
-    return 0 == sh(returnStatus: true, script: "(cd ${root}${parts[1]}/jobs/${parts[2]}/branches && grep '${parts[3]}' */name-utf8.txt)")
-  }
-  
-  error("melt.doesJobExist cannot understand '${job}'")
-  return false
-}
-
 
