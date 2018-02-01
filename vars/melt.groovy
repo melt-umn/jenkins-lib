@@ -77,6 +77,7 @@ def setProperties(silverBase=false, ablecBase=false) {
   }
   
   if (ablecBase) {
+    echo "debug check: set ablec parameters"
     // Where to look to find AbleC sources
     params << string(name: 'ABLEC_BASE',
                      defaultValue: 'ableC',
