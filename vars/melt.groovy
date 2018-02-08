@@ -31,12 +31,12 @@ def notify(Map args) {
   def color
   if (currentBuild.result == 'FAILURE') {
     status = 'failed'
-    color = '#B00000'
+    color = '#FF0000'
   } else {
     def previousResult = currentBuild.previousBuild?.result
     if (currentBuild.result == null && previousResult && previousResult == 'FAILURE') {
       status = 'back to normal'
-      color = '#00B000'
+      color = '#00FF00'
     } else {
       // No notification of continued success
       return
