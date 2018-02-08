@@ -32,6 +32,25 @@ def resolveHost() {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
+// Checkout an extension into the local workspace (into extensions/)
+//
+// NOTE: prioritizes BRANCH_NAME over 'develop'
+//
+def checkoutExtension(ext) {
+
+  checkout([
+    $class: 'GitSCM',
+    branches: [[name: "*/${env.BRANCH_NAME}"], [name: '*/develop']],
+    doGenerateSubmoduleConfigurations: false,
+    extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "extensions/${ext}"],
+                 [$class: 'CleanCheckout']],
+    submoduleCfg: [],
+    userRemoteConfigs: [[url: "https://github.com/melt-umn/${ext}.git"]]])
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
 // Get set up to build. Creates:
 //
 // ./generated/       (empty)
@@ -62,14 +81,7 @@ def prepareWorkspace(name, extensions=[]) {
 
   // Get the other extensions, preferring same branch name over develop
   for (ext in extensions) {
-    checkout([$class: 'GitSCM',
-              branches: [[name: "*/${env.BRANCH_NAME}"], [name: '*/develop']],
-              doGenerateSubmoduleConfigurations: false,
-              extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "extensions/${ext}"],
-                           [$class: 'CleanCheckout']],
-              submoduleCfg: [],
-              userRemoteConfigs: [[url: "https://github.com/melt-umn/${ext}.git"]]])
-
+    checkoutExtension(ext)
   }
   
   def path = pwd()
