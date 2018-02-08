@@ -88,11 +88,31 @@ def prepareWorkspace(name, extensions=[]) {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// A normal AbleC extension build.
+// A normal AbleC extension build. (see: ableC-skeleton)
 //
 // extension_name: the name of this extension, the 'scm' object should reference
+// extensions: the other extensions this extension depends upon
 //
 def buildNormalExtension(extension_name, extensions=[]) {
+  internalBuildExtension(extension_name, extensions, false)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// An AbleC extension build with a C library. (see: ableC-lib-skeleton)
+//
+// extension_name: the name of this extension, the 'scm' object should reference
+// extensions: the other extensions this extension depends upon
+//
+def buildLibraryExtension(extension_name, extensions=[]) {
+  internalBuildExtension(extension_name, extensions, true)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Do the above.
+//
+def internalBuildExtension(extension_name, extensions, hasLibrary) {
 
   melt.setProperties(silverBase: true, ablecBase: true)
 
@@ -108,6 +128,16 @@ def buildNormalExtension(extension_name, extensions=[]) {
       withEnv(newenv) {
         dir("extensions/${extension_name}") {
           sh "make clean build"
+        }
+      }
+    }
+
+    if (hasLibrary) {
+      stage ("Libraries") {
+        withEnv(env) {
+          dir("extensions/${extension_name}") {
+            sh "make libs"
+          }
         }
       }
     }
