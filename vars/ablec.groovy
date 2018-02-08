@@ -24,6 +24,11 @@ def resolveHost() {
                            [$class: 'CleanCheckout']],
               submoduleCfg: [],
               userRemoteConfigs: [[url: 'https://github.com/melt-umn/ableC.git']]])
+
+    if (params.ABLEC_GEN != 'no') {
+      sh "cp -r ${params.ABLEC_GEN}/* generated/"
+    }
+
     return pwd() + "/ableC/"
   }
   
@@ -128,6 +133,8 @@ def internalBuildExtension(extension_name, extensions, hasLibrary) {
 
   melt.setProperties(silverBase: true, ablecBase: true)
 
+  def isFastBuild = (params.ABLEC_GEN != 'no')
+
   node {
   try {
 
@@ -139,7 +146,12 @@ def internalBuildExtension(extension_name, extensions, hasLibrary) {
 
       withEnv(newenv) {
         dir("extensions/${extension_name}") {
-          sh "make clean build"
+          if (isFastBuild) {
+            // Fast builds do MWDA as part of initial build
+            sh 'make "SVFLAGS=${SVFLAGS} --warn-all --warn-error" clean build'
+          } else {
+            sh 'make clean build'
+          }
         }
       }
     }
@@ -166,7 +178,12 @@ def internalBuildExtension(extension_name, extensions, hasLibrary) {
       withEnv(newenv) {
         dir("extensions/${extension_name}") {
           /* use -B option to always run analyses */
-          sh "make -B analyses"
+          if (isFastBuild) {
+            // Fast builds only have the MDA to run in this phase
+            sh "make -B mda"
+          } else {
+            sh "make -B analyses"
+          }
         }
       }
     }
@@ -174,6 +191,10 @@ def internalBuildExtension(extension_name, extensions, hasLibrary) {
     stage ("Test") {
       withEnv(newenv) {
         dir("extensions/${extension_name}") {
+          if (isFastBuild) {
+            // Fast builds avoid unnecessary recompiles
+            sh "cp examples/ableC.jar test/"
+          }
           /* use -B option to always run tests */
           sh "make -B test"
         }
