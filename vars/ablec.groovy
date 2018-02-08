@@ -134,7 +134,7 @@ def internalBuildExtension(extension_name, extensions, hasLibrary) {
 
     if (hasLibrary) {
       stage ("Libraries") {
-        withEnv(env) {
+        withEnv(newenv) {
           dir("extensions/${extension_name}") {
             sh "make libs"
           }
