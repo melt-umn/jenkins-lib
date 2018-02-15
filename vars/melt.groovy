@@ -124,11 +124,17 @@ def setProperties(Map args) {
 // Builds 'foo', with 'SILVER_BASE' inherited and 'ABLEC_BASE' set to a new value.
 //
 def buildJob(job, parameters=[:]) {
-  def using = []
-  for (kv in (params + parameters)) {
-    using << string(name: kv.key, value: kv.value)
+  def usingparameters = []
+  def combinedparameters = params + parameters
+  // At present it is not safe to iterate over maps inside jenkinsfiles
+  // I don't have a bug to reference but 'jenkins serializable iterate over map'
+  // returns appropriate results.
+  // iterating over lists seems to be fine, so let's break this up by getting
+  // a list of keys and using that
+  for (key in combinedparameters.keySet()) {
+    usingparameters << string(name: key, value: combinedparameters[key])
   }
-  build(job: job, parameters: using)
+  build(job: job, parameters: usingparameters)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -154,7 +160,7 @@ def doesJobExist(job) {
   if (parts.length == 4) {
     assert parts[0] == ''
     // potentially very fragile, because maybe they change this in the future, but oh well
-    return 0 == sh(returnStatus: true, script: "(cd ${root}${parts[1]}/jobs/${parts[2]}/branches && grep '${parts[3]}' */name-utf8.txt)")
+    return 0 == sh(returnStatus: true, script: "(cd ${root}${parts[1]}/jobs/${parts[2]}/branches && grep '^${parts[3]}$' */name-utf8.txt)")
   }
 
   error("melt.doesJobExist cannot understand '${job}'")
