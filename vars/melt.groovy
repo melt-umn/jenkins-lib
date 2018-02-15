@@ -160,7 +160,7 @@ def doesJobExist(job) {
   if (parts.length == 4) {
     assert parts[0] == ''
     // potentially very fragile, because maybe they change this in the future, but oh well
-    return 0 == sh(returnStatus: true, script: "(cd ${root}${parts[1]}/jobs/${parts[2]}/branches && grep '^${parts[3]}$' */name-utf8.txt)")
+    return 0 == sh(returnStatus: true, script: "(cd ${root}${parts[1]}/jobs/${parts[2]}/branches && grep '^${parts[3]}\$' */name-utf8.txt)")
   }
 
   error("melt.doesJobExist cannot understand '${job}'")
