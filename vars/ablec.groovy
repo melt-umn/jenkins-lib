@@ -15,8 +15,10 @@ import jenkins.model.Jenkins
 // NOTE: prioritizes BRANCH_NAME over 'develop'
 //
 def resolveHost() {
-  
+
   if (params.ABLEC_BASE == 'ableC') {
+    echo "Checking out our own copy of ableC/develop"
+
     checkout([$class: 'GitSCM',
               branches: [[name: "*/${env.BRANCH_NAME}"], [name: '*/develop']],
               doGenerateSubmoduleConfigurations: false,
@@ -25,13 +27,15 @@ def resolveHost() {
               submoduleCfg: [],
               userRemoteConfigs: [[url: 'https://github.com/melt-umn/ableC.git']]])
 
-    if (params.ABLEC_GEN != 'no') {
-      sh "cp -r ${params.ABLEC_GEN}/* generated/"
-    }
-
     return pwd() + "/ableC/"
   }
-  
+
+  echo "Using existing ableC workspace: ${params.ABLEC_BASE}"
+  if (params.ABLEC_GEN != 'no') {
+    echo "Using existing ableC generated files: ${params.ABLEC_GEN}"
+    sh "cp -r ${params.ABLEC_GEN}/* generated/"
+  }
+
   return params.ABLEC_BASE
 }
 
@@ -69,7 +73,7 @@ def prepareWorkspace(name, extensions=[]) {
   sh "mkdir -p generated"
   sh "rm -rf generated/* || true"
 
-  // Get AbleC
+  // Get AbleC (may grab generated files, too)
   def ablec_base = resolveHost()
   
   // Get this extension
