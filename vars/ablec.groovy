@@ -151,7 +151,7 @@ def internalBuildExtension(extension_name, extensions, hasLibrary) {
       withEnv(newenv) {
         dir("extensions/${extension_name}") {
           if (isFastBuild) {
-            // Fast builds do MWDA as part of initial build
+            echo "Fast build: doing MWDA as part of initial build"
             sh 'make "SVFLAGS=${SVFLAGS} --warn-all --warn-error" clean build'
           } else {
             sh 'make clean build'
@@ -181,12 +181,11 @@ def internalBuildExtension(extension_name, extensions, hasLibrary) {
     stage ("Modular Analyses") {
       withEnv(newenv) {
         dir("extensions/${extension_name}") {
-          /* use -B option to always run analyses */
           if (isFastBuild) {
-            // Fast builds only have the MDA to run in this phase
-            sh "make -B mda"
+            echo "Fast build: only doing MDA, skipping MWDA (done already)"
+            sh "make mda"
           } else {
-            sh "make -B analyses"
+            sh "make analyses"
           }
         }
       }
@@ -196,11 +195,10 @@ def internalBuildExtension(extension_name, extensions, hasLibrary) {
       withEnv(newenv) {
         dir("extensions/${extension_name}") {
           if (isFastBuild) {
-            // Fast builds avoid unnecessary recompiles
+            echo "Fast build: copying ableC.jar into test"
             sh "cp examples/ableC.jar test/"
           }
-          /* use -B option to always run tests */
-          sh "make -B test"
+          sh "make test"
         }
       }
     }
