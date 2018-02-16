@@ -34,6 +34,8 @@ def resolveHost() {
   if (params.ABLEC_GEN != 'no') {
     echo "Using existing ableC generated files: ${params.ABLEC_GEN}"
     sh "cp -r ${params.ABLEC_GEN}/* generated/"
+    // Freshen up generated parsers so .java is newer than .copper
+    sh "find generated/ -name "Parser*java" | xargs touch"
   }
 
   return params.ABLEC_BASE
