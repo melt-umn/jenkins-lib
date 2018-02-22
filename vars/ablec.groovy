@@ -72,8 +72,7 @@ def checkoutExtension(ext) {
 def prepareWorkspace(name, extensions=[]) {
   
   // Clean Silver-generated files from previous builds in this workspace
-  sh "mkdir -p generated"
-  sh "rm -rf generated/* || true"
+  melt.clearGenerated()
 
   // Get AbleC (may grab generated files, too)
   def ablec_base = resolveHost()
@@ -94,16 +93,14 @@ def prepareWorkspace(name, extensions=[]) {
   for (ext in extensions) {
     checkoutExtension(ext)
   }
-  
+
   def path = pwd()
-  def newenv = [
-    "PATH+silver=${params.SILVER_BASE}/support/bin/",
-    // libcord, libgc, cilk headers:
-    "C_INCLUDE_PATH=/project/melt/Software/ext-libs/usr/local/include",
-    "LIBRARY_PATH=/project/melt/Software/ext-libs/usr/local/lib",
+  def newenv = melt.getSilverEnv() + [
     "ABLEC_BASE=${ablec_base}",
     "EXTS_BASE=${path}/extensions",
-    "SVFLAGS=-G ${path}/generated"
+    // libcord, libgc, cilk headers:
+    "C_INCLUDE_PATH=/project/melt/Software/ext-libs/usr/local/include",
+    "LIBRARY_PATH=/project/melt/Software/ext-libs/usr/local/lib"
   ]
   
   return newenv
@@ -206,7 +203,7 @@ def internalBuildExtension(extension_name, extensions, hasLibrary) {
     }
 
     /* If we've gotten all this way with a successful build, don't take up disk space */
-    sh "rm -rf generated/* || true"
+    melt.clearGenerated()
   }
   catch (e) {
     melt.handle(e)

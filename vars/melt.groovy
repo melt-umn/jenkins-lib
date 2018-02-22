@@ -93,7 +93,7 @@ def setProperties(Map args) {
   if (args.silverBase) {
     // We're obviously assuming there's only one machine Jenkins can use here.
     params << string(name: 'SILVER_BASE',
-                     defaultValue: '/export/scratch/melt-jenkins/custom-silver/',
+                     defaultValue: SILVER_WORKSPACE,
                      description: 'Silver installation path to use.')
   }
   
@@ -165,4 +165,34 @@ def doesJobExist(job) {
 
   error("melt.doesJobExist cannot understand '${job}'")
   return false
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Compute the typical additions to the environment for building silver
+// projects from jenkins, using SILVER_BASE parameter
+//
+def getSilverEnv() {
+  // Notify when we're not using the normal silver build.
+  if (params.SILVER_BASE != SILVER_WORKSPACE) {
+    echo "\n\nCUSTOM SILVER IN USE.\nUsing: ${params.SILVER_BASE}\n\n"
+  }
+  // We generate files in the workspace ./generated, essentially always
+  def GEN = "${pwd()}/generated"
+  // Neat Jenkins trick to add things to PATH:
+  return [
+    "PATH+silver=${params.SILVER_BASE}/support/bin/",
+    "PATH+nailgun=:${params.SILVER_BASE}/support/nailgun/",
+    "SILVER_GEN=${GEN}"
+  ]
+  // Currently not setting SVFLAGS by default, but we could in the future
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Deletes generated files, and ensures the generated directory still exists.
+//
+def clearGenerated() {
+    sh "rm -rf generated/* || true"
+    sh "mkdir -p generated"
 }
