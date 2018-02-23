@@ -81,14 +81,15 @@ def handle(e) {
 def setProperties(Map args) {
   args = [
     silverBase: false,
-    ablecBase: false
+    ablecBase: false,
+    overrideJars: false
   ] + args
   def props = []
   def params = []
   
   // Keep metadata forever, but discard any stored artifacts (if any!) after awhile.
   // (Latest stable is always preserved.)
-  props << buildDiscarder(logRotator(artifactDaysToKeepStr: '90', artifactNumToKeepStr: '10'))
+  props << buildDiscarder(logRotator(artifactDaysToKeepStr: '28', artifactNumToKeepStr: '3'))
 
   if (args.silverBase) {
     // We're obviously assuming there's only one machine Jenkins can use here.
@@ -106,6 +107,12 @@ def setProperties(Map args) {
     params << string(name: 'ABLEC_GEN',
                      defaultValue: 'no',
                      description: 'Path to Silver generated files for ABLEC_BASE. "no" means not available.')
+  }
+
+  if (args.overrideJars) {
+    params << string(name: 'OVERRIDE_JARS',
+                     defaultValue: 'no',
+                     description: 'Path on coldpress to obtain jars from instead of using fetch-jars.')
   }
 
   if (params) {

@@ -32,4 +32,10 @@ This will call the `notify` method in `vars/melt.groovy`.
 
 A bit annoying, but better than duplicating code all over, eh?
 
+## Jenkinsfiles
+
+Examples and useful documentation:
+
+* https://github.com/apache/maven/blob/master/Jenkinsfile
+* https://github.com/jenkinsci/pipeline-plugin/blob/master/TUTORIAL.md
 
