@@ -21,5 +21,8 @@ node {
   assert melt.doesJobExist('/melt-umn/silver/develop')
 
   echo "Done!"
+
+  // As a reference, I find this helpful to refer to
+  sh "printenv"
 }
 
