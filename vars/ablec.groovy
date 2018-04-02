@@ -163,7 +163,7 @@ def internalBuildExtension(extension_name, extensions, hasLibrary) {
       stage ("Libraries") {
         withEnv(newenv) {
           dir("extensions/${extension_name}") {
-            sh "make libs"
+            sh "make libs -j8"
           }
         }
       }
