@@ -172,7 +172,7 @@ def internalBuildExtension(extension_name, extensions, hasLibrary) {
     stage ("Examples") {
       withEnv(newenv) {
         dir("extensions/${extension_name}") {
-          sh "make examples"
+          sh "make examples -j8"
         }
       }
     }
@@ -197,7 +197,7 @@ def internalBuildExtension(extension_name, extensions, hasLibrary) {
             echo "Fast build: copying ableC.jar into tests"
             sh "cp examples/ableC.jar tests/"
           }
-          sh "make test"
+          sh "make test -j8"
         }
       }
     }
