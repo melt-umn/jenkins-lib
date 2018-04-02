@@ -194,8 +194,8 @@ def internalBuildExtension(extension_name, extensions, hasLibrary) {
       withEnv(newenv) {
         dir("extensions/${extension_name}") {
           if (isFastBuild) {
-            echo "Fast build: copying ableC.jar into test"
-            sh "cp examples/ableC.jar test/"
+            echo "Fast build: copying ableC.jar into tests"
+            sh "cp examples/ableC.jar tests/"
           }
           sh "make test"
         }
