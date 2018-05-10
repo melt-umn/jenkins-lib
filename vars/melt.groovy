@@ -242,3 +242,15 @@ def buildProject(repo, parameters=[:]) {
   buildJob(jobname, parameters)
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//
+// Adds an annotation to the current build.
+//
+def annotate(String anno) {
+  if (currentBuild.description == null) {
+    currentBuild.description = anno
+  } else {
+    currentBuild.description += " ${anno}"
+  }
+}
+
