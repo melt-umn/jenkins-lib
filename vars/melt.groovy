@@ -211,8 +211,11 @@ def clearGenerated() {
 // allocate a workspace, and we generally want our job to have one workspace.
 //
 def trynode(String jobname, Closure body) {
+  echo "in body with ${jobname}"
   node {
+    echo "in node"
     try {
+      echo "in try"
       body()
     }
     catch (e) {

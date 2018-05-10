@@ -37,9 +37,11 @@ node {
     }
   }
   
+  echo "before"
   melt.trynode 'jenkins-lib' {
-    echo "Success"
+    echo "during"
   }
+  echo "after"
 
 }
 
