@@ -126,7 +126,7 @@ def setProperties(Map args) {
 // Build a job, but automatically inherit parameters given to this job.
 // Also, allow providing parameters in an easier fashion, since all are strings.
 //
-// melt.buildJob('/foo/', [ABLEC_BASE: 'bar'])
+// melt.buildJob('/foo', [ABLEC_BASE: 'bar'])
 //
 // Builds 'foo', with 'SILVER_BASE' inherited and 'ABLEC_BASE' set to a new value.
 //
@@ -203,3 +203,39 @@ def clearGenerated() {
     sh "rm -rf generated/* || true"
     sh "mkdir -p generated"
 }
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Wraps allocating a node with an exception handler that performs notifications.
+// We generally have to have one node allocated for the whole job because nodes
+// allocate a workspace, and we generally want our job to have one workspace.
+//
+def trynode(String jobname, Closure body) {
+  node {
+    try {
+      body()
+    }
+    catch (e) {
+      handle(e)
+    }
+    finally {
+      notify(job: jobname)
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Builds a downstream job, choosing same branch name if it exists.
+// repo: e.g. "/melt-umn/ableC"
+//
+def buildProject(repo, parameters=[:]) {
+  def jobname = "${repo}/${hudson.Util.rawEncode(env.BRANCH_NAME)}"
+  // Check if it exists (but don't bother checking if we're already 'develop')
+  if (env.BRANCH_NAME != 'develop' && !doesJobExist(jobname)) {
+    // Fall back seamlessly
+    jobname = "${repo}/develop"
+  }
+  buildJob(jobname, parameters)
+}
+

@@ -19,10 +19,27 @@ node {
   assert melt.doesJobExist('x-metaII-artifacts')
   assert melt.doesJobExist('/x-metaII-artifacts')
   assert melt.doesJobExist('/melt-umn/silver/develop')
-
   echo "Done!"
 
   // As a reference, I find this helpful to refer to
   sh "printenv"
+  
+  currentBuild.description += "Test."
+  currentBuild.description += " Again."
+  
+  // A test to see how this works out
+  node {
+    echo "${env.WORKSPACE}"
+    sh 'echo ${WORKSPACE}'
+    node {
+      echo "${env.WORKSPACE}"
+      sh 'echo ${WORKSPACE}'
+    }
+  }
+  
+  melt.trynode 'jenkins-lib' {
+    echo "Success"
+  }
+
 }
 
