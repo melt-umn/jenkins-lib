@@ -112,7 +112,7 @@ def setProperties(Map args) {
   if (args.overrideJars) {
     params << string(name: 'OVERRIDE_JARS',
                      defaultValue: 'no',
-                     description: 'Path on coldpress to obtain jars from instead of using fetch-jars.')
+                     description: 'Path on coldpress to obtain jars from instead of using fetch-jars. "no" means find jars normally. "develop" means use the normal latest successful jars from the develop branch.')
   }
 
   if (params) {
@@ -183,6 +183,7 @@ def getSilverEnv() {
   // Notify when we're not using the normal silver build.
   if (params.SILVER_BASE != SILVER_WORKSPACE) {
     echo "\n\nCUSTOM SILVER IN USE.\nUsing: ${params.SILVER_BASE}\n\n"
+    annotate("Custom Silver.")
   }
   // We generate files in the workspace ./generated, essentially always
   def GEN = "${pwd()}/generated"
@@ -211,11 +212,8 @@ def clearGenerated() {
 // allocate a workspace, and we generally want our job to have one workspace.
 //
 def trynode(String jobname, Closure body) {
-  echo "in body with ${jobname}"
   node {
-    echo "in node"
     try {
-      echo "in try"
       body()
     }
     catch (e) {

@@ -27,10 +27,13 @@ def resolveHost() {
               submoduleCfg: [],
               userRemoteConfigs: [[url: 'https://github.com/melt-umn/ableC.git']]])
 
+    // TODO: we *might* wish to melt.annotate if we're checking out a *branch* of ablec, figure out how to check? and maybe consider whether we want that?
+
     return pwd() + "/ableC/"
   }
 
   echo "Using existing ableC workspace: ${params.ABLEC_BASE}"
+  melt.annotate('Custom AbleC.')
   if (params.ABLEC_GEN != 'no') {
     echo "Using existing ableC generated files: ${params.ABLEC_GEN}"
     sh "cp -r ${params.ABLEC_GEN}/* generated/"
@@ -138,8 +141,7 @@ def internalBuildExtension(extension_name, extensions, hasLibrary) {
 
   def isFastBuild = (params.ABLEC_GEN != 'no')
 
-  node {
-  try {
+  melt.trynode(extension_name) {
 
     def newenv // visible scope to all stages
 
@@ -205,12 +207,5 @@ def internalBuildExtension(extension_name, extensions, hasLibrary) {
     /* If we've gotten all this way with a successful build, don't take up disk space */
     melt.clearGenerated()
   }
-  catch (e) {
-    melt.handle(e)
-  }
-  finally {
-    melt.notify(job: extension_name)
-  }
-  } // node
 }
 
