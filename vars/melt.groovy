@@ -186,7 +186,7 @@ def getSilverEnv() {
     annotate("Custom Silver.")
   }
   // We generate files in the workspace ./generated, essentially always
-  def GEN = "${pwd()}/generated"
+  def GEN = "${env.WORKSPACE}/generated"
   // Neat Jenkins trick to add things to PATH:
   return [
     "PATH+silver=${params.SILVER_BASE}/support/bin/",

@@ -38,21 +38,5 @@ node {
 //    }
 //  }
   
-  try {
-    copyArtifacts(projectName: "/no_such_project", selector: lastSuccessful())
-    echo "Wait, huh?"
-  } catch (hudson.AbortException e) {
-    echo "Caught failure."
-  }
-  
-  try {
-    node {
-      copyArtifacts(projectName: "/melt-umn/silver/develop", selector: lastSuccessful())
-    }
-    echo "Worked."
-  } catch (hudson.AbortException e) {
-    echo "Wait, what?"
-  }
-  
 }
 

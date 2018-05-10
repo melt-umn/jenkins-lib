@@ -29,7 +29,7 @@ def resolveHost() {
 
     // TODO: we *might* wish to melt.annotate if we're checking out a *branch* of ablec, figure out how to check? and maybe consider whether we want that?
 
-    return pwd() + "/ableC/"
+    return "${env.WORKSPACE}/ableC/"
   }
 
   echo "Using existing ableC workspace: ${params.ABLEC_BASE}"
@@ -97,10 +97,9 @@ def prepareWorkspace(name, extensions=[]) {
     checkoutExtension(ext)
   }
 
-  def path = pwd()
   def newenv = melt.getSilverEnv() + [
     "ABLEC_BASE=${ablec_base}",
-    "EXTS_BASE=${path}/extensions",
+    "EXTS_BASE=${env.WORKSPACE}/extensions",
     // libcord, libgc, cilk headers:
     "C_INCLUDE_PATH=/project/melt/Software/ext-libs/usr/local/include",
     "LIBRARY_PATH=/project/melt/Software/ext-libs/usr/local/lib"
