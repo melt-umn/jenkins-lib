@@ -16,8 +16,8 @@ node {
   assert !melt.doesJobExist('asdfasdf')
   assert !melt.doesJobExist('/asdfasdf')
   assert !melt.doesJobExist('/melt-umn/silver/no_such_branch_exists')
-  assert melt.doesJobExist('x-metaII-artifacts')
-  assert melt.doesJobExist('/x-metaII-artifacts')
+  //assert melt.doesJobExist('x-metaII-artifacts')
+  //assert melt.doesJobExist('/x-metaII-artifacts')
   assert melt.doesJobExist('/melt-umn/silver/develop')
   echo "Done!"
 
