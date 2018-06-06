@@ -17,7 +17,7 @@ import jenkins.model.Jenkins
 def resolveHost() {
 
   if (params.ABLEC_BASE == 'ableC') {
-    echo "Checking out our own copy of ableC/develop"
+    echo "Checking out our own copy of ableC"
 
     checkout([$class: 'GitSCM',
               branches: [[name: "*/${env.BRANCH_NAME}"], [name: '*/develop']],
@@ -46,6 +46,47 @@ def resolveHost() {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
+// Obtain a path to AbleC to use to build this extension
+//
+// e.g. def ablec_path = ablec.resolveHost()
+//
+// NOTE: prioritizes BRANCH_NAME over 'develop'
+//
+def resolveSilverAbleC() {
+
+  if (params.SILVER_ABLEC_BASE == 'silver-ableC') {
+    echo "Checking out and building our own copy of silver-ableC"
+
+    // TODO: we *might* wish to melt.annotate if we're checking out a *branch* of silver-ableC, figure out how to check? and maybe consider whether we want that?
+
+    def extensions = [
+      "silver-ableC",
+      "ableC-closure",
+      "ableC-refcount-closure",
+      "ableC-templating"
+    ]
+    for (ext in extensions) {
+      checkoutExtension(ext)
+    }
+
+    withEnv(melt.getSilverEnv()) {
+      dir("extensions/silver-ableC") {
+        sh "./bootstrap-compile"
+      }
+    }
+
+    return "${env.WORKSPACE}/extensions/silver-ableC/"
+  }
+  
+  // We assume that the extension dependancies of silver-ableC are already checked out as well
+  echo "Using existing silver-ableC workspace: ${params.SILVER_ABLEC_BASE}"
+  melt.annotate('Custom Silver-ableC.')
+  
+  return params.SILVER_ABLEC_BASE
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
 // Checkout an extension into the local workspace (into extensions/)
 //
 // NOTE: prioritizes BRANCH_NAME over 'develop'
@@ -67,18 +108,23 @@ def checkoutExtension(ext) {
 //
 // Get set up to build. Creates:
 //
-// ./generated/       (empty)
-// ./ableC/           (if no ABLEC_BASE parameter is set)
-// ./extensions/name  (where this extension is checked out)
-// ./extensions/more  (if given)
+// ./generated/              (empty)
+// ./ableC/                  (if no ABLEC_BASE parameter is set)
+// ./extensions/silver-ableC (if requested no SILVER_ABLEC_BASE parameter is set)
+// ./extensions/deps         (ditto for silver-ableC dependencies)
+// ./extensions/name         (where this extension is checked out)
+// ./extensions/more         (if given)
 //
-def prepareWorkspace(name, extensions=[]) {
+def prepareWorkspace(name, extensions=[], hasSilverAbleC=false) {
   
   // Clean Silver-generated files from previous builds in this workspace
   melt.clearGenerated()
 
   // Get AbleC (may grab generated files, too)
   def ablec_base = resolveHost()
+  
+  // Get Silver-ableC
+  def silver_ablec_base = hasSilverAbleC? resolveSilverAbleC() : null
   
   // Get this extension
   checkout([$class: 'GitSCM',
@@ -97,13 +143,15 @@ def prepareWorkspace(name, extensions=[]) {
     checkoutExtension(ext)
   }
 
-  def newenv = melt.getSilverEnv() + [
+  def newenv =
+    melt.getSilverEnv() + [
     "ABLEC_BASE=${ablec_base}",
     "EXTS_BASE=${env.WORKSPACE}/extensions",
     // libcord, libgc, cilk headers:
     "C_INCLUDE_PATH=/project/melt/Software/ext-libs/usr/local/include",
     "LIBRARY_PATH=/project/melt/Software/ext-libs/usr/local/lib"
-  ]
+  ] +
+    (hasSilverAbleC? ["PATH+silver-ableC=${params.SILVER_ABLEC_BASE}/support/bin/"] : [])
   
   return newenv
 }
@@ -116,7 +164,7 @@ def prepareWorkspace(name, extensions=[]) {
 // extensions: the other extensions this extension depends upon
 //
 def buildNormalExtension(extension_name, extensions=[]) {
-  internalBuildExtension(extension_name, extensions, false)
+  internalBuildExtension(extension_name, extensions, false, false)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -127,16 +175,39 @@ def buildNormalExtension(extension_name, extensions=[]) {
 // extensions: the other extensions this extension depends upon
 //
 def buildLibraryExtension(extension_name, extensions=[]) {
-  internalBuildExtension(extension_name, extensions, true)
+  internalBuildExtension(extension_name, extensions, true, false)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// An AbleC extension build requiring silver-ableC. (see: ableC-closure)
+//
+// extension_name: the name of this extension, the 'scm' object should reference
+// extensions: the other extensions this extension depends upon
+//
+def buildSilverAbleCExtension(extension_name, extensions=[]) {
+  internalBuildExtension(extension_name, extensions, false, true)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// An AbleC extension build with a C library, requiring silver-ableC.
+// (see: ableC-nondeterministic-search)
+//
+// extension_name: the name of this extension, the 'scm' object should reference
+// extensions: the other extensions this extension depends upon
+//
+def buildLibrarySilverAbleCExtension(extension_name, extensions=[]) {
+  internalBuildExtension(extension_name, extensions, true, true)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Do the above.
 //
-def internalBuildExtension(extension_name, extensions, hasLibrary) {
+def internalBuildExtension(extension_name, extensions, hasLibrary, hasSilverAbleC) {
 
-  melt.setProperties(silverBase: true, ablecBase: true)
+  melt.setProperties(silverBase: true, ablecBase: true, silverAblecBase: hasSilverAbleC)
 
   def isFastBuild = (params.ABLEC_GEN != 'no')
 
@@ -146,7 +217,7 @@ def internalBuildExtension(extension_name, extensions, hasLibrary) {
 
     stage ("Build") {
 
-      newenv = prepareWorkspace(extension_name, extensions)
+      newenv = prepareWorkspace(extension_name, extensions, hasSilverAbleC)
 
       withEnv(newenv) {
         dir("extensions/${extension_name}") {
