@@ -140,18 +140,16 @@ def prepareWorkspace(name, extensions=[], hasSilverAbleC=false) {
 
   // Get the other extensions, preferring same branch name over develop
   for (ext in extensions) {
-    checkoutExtension(ext)
+    melt.checkoutExtension(ext)
   }
 
-  def newenv =
-    melt.getSilverEnv() + [
+  def newenv = melt.getSilverEnv() + [
     "ABLEC_BASE=${ablec_base}",
     "EXTS_BASE=${env.WORKSPACE}/extensions",
     // libcord, libgc, cilk headers:
     "C_INCLUDE_PATH=/project/melt/Software/ext-libs/usr/local/include",
     "LIBRARY_PATH=/project/melt/Software/ext-libs/usr/local/lib"
-  ] +
-    (hasSilverAbleC? ["PATH+silver-ableC=${params.SILVER_ABLEC_BASE}/support/bin/"] : [])
+  ] + (hasSilverAbleC? ["PATH+silver-ableC=${params.SILVER_ABLEC_BASE}/support/bin/"] : [])
   
   return newenv
 }
