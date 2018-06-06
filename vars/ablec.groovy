@@ -140,7 +140,7 @@ def prepareWorkspace(name, extensions=[], hasSilverAbleC=false) {
 
   // Get the other extensions, preferring same branch name over develop
   for (ext in extensions) {
-    melt.checkoutExtension(ext)
+    checkoutExtension(ext)
   }
 
   def newenv = melt.getSilverEnv() + [
