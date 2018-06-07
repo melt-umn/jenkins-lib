@@ -46,13 +46,13 @@ def resolveHost() {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Obtain a path to AbleC to use to build this extension
+// Obtain a path to Silver-ableC to use to build this extension
 //
-// e.g. def ablec_path = ablec.resolveHost()
+// e.g. def silver_ablec_path = ablec.resolveSilverAbleC()
 //
 // NOTE: prioritizes BRANCH_NAME over 'develop'
 //
-def resolveSilverAbleC() {
+def resolveSilverAbleC(ablec_base) {
 
   if (params.SILVER_ABLEC_BASE == 'silver-ableC') {
     echo "Checking out and building our own copy of silver-ableC"
@@ -68,9 +68,14 @@ def resolveSilverAbleC() {
     for (ext in extensions) {
       checkoutExtension(ext)
     }
+    
+    def newenv = melt.getSilverEnv() + [
+      "ABLEC_BASE=${ablec_base}",
+      "EXTS_BASE=${env.WORKSPACE}/extensions"
+    ]
 
-    withEnv(melt.getSilverEnv()) {
-      dir("extensions/silver-ableC") {
+    withEnv(newenv) {
+      dir("${env.WORKSPACE}/extensions/silver-ableC") {
         sh "./bootstrap-compile"
       }
     }
@@ -124,7 +129,7 @@ def prepareWorkspace(name, extensions=[], hasSilverAbleC=false) {
   def ablec_base = resolveHost()
   
   // Get Silver-ableC
-  def silver_ablec_base = hasSilverAbleC? resolveSilverAbleC() : null
+  def silver_ablec_base = hasSilverAbleC? resolveSilverAbleC(ablec_base) : null
   
   // Get this extension
   checkout([$class: 'GitSCM',

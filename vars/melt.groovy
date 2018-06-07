@@ -113,8 +113,8 @@ def setProperties(Map args) {
   if (args.silverAblecBase) {
     // Where to look to find Silver-ableC sources
     params << string(name: 'SILVER_ABLEC_BASE',
-                     defaultValue: 'no',
-                     description: 'Path to Silver-ableC host checkout to use. "silver-ableC" is a special value that indicates to check out and build our own copy, in the process also checking out the various other ableC extension dependencies. "no" means not available.')
+                     defaultValue: 'silver-ableC',
+                     description: 'Path to Silver-ableC host checkout to use. "silver-ableC" is a special value that indicates to check out and build our own copy, also checking out the extension dependancies of the default composed version of silver-ableC.')
   }
 
   if (args.overrideJars) {
@@ -122,7 +122,7 @@ def setProperties(Map args) {
                      defaultValue: 'no',
                      description: 'Path on coldpress to obtain jars from instead of using fetch-jars. "no" means find jars normally. "develop" means use the normal latest successful jars from the develop branch.')
   }
-
+  
   if (params) {
     props << parameters(params)
   }
