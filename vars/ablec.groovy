@@ -141,7 +141,7 @@ def checkoutExtension(ext) {
 // ./generated/              (empty)
 // ./ableC/                  (if no ABLEC_BASE parameter is set)
 // ./extensions/silver-ableC (if requested no SILVER_ABLEC_BASE parameter is set)
-// ./extensions/deps         (ditto for silver-ableC dependencies)
+// ./extensions/deps         (ditto for silver-ableC dependencies, if silver-ableC jars weren't available)
 // ./extensions/name         (where this extension is checked out)
 // ./extensions/more         (if given)
 //
