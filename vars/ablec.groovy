@@ -65,13 +65,17 @@ def resolveSilverAbleC(ablec_base) {
     String branchJob = "/melt-umn/silver-ableC/${hudson.Util.rawEncode(env.BRANCH_NAME)}"
     try {
       // If the last build has artifacts, use those.
-      copyArtifacts(projectName: branchJob, selector: lastCompleted())
-      melt.annotate("Jars from branch (prev).")
+      dir("${env.WORKSPACE}/extensions/silver-ableC") {
+        copyArtifacts(projectName: branchJob, selector: lastCompleted())
+      }
+      melt.annotate("Silver-ableC jars from branch (prev).")
     } catch (hudson.AbortException exc2) {
       try {
         // If there is a last successful build, use those.
-        copyArtifacts(projectName: branchJob, selector: lastSuccessful())
-        melt.annotate("Jars from branch (successful).")
+        dir("${env.WORKSPACE}/extensions/silver-ableC") {
+          copyArtifacts(projectName: branchJob, selector: lastSuccessful())
+        }
+        melt.annotate("Silver-ableC jars from branch (successful).")
       } catch (hudson.AbortException exc3) {
         // That's okay, just go build it ourselves.
         echo "Couldn't find dependencies, building silver-ableC from scratch"
