@@ -68,17 +68,17 @@ def resolveSilverAbleC(ablec_base) {
       dir("${env.WORKSPACE}/extensions/silver-ableC") {
         copyArtifacts(projectName: branchJob, selector: lastCompleted())
       }
-      melt.annotate("Silver-ableC jars from branch (prev).")
+      melt.annotate("Silver-ableC jar from branch (prev).")
     } catch (hudson.AbortException exc2) {
       try {
         // If there is a last successful build, use those.
         dir("${env.WORKSPACE}/extensions/silver-ableC") {
           copyArtifacts(projectName: branchJob, selector: lastSuccessful())
         }
-        melt.annotate("Silver-ableC jars from branch (successful).")
+        melt.annotate("Silver-ableC jar from branch (successful).")
       } catch (hudson.AbortException exc3) {
         // That's okay, just go build it ourselves.
-        echo "Couldn't find dependencies, building silver-ableC from scratch"
+        echo "Couldn't find Silver-ableC jar from branch, building from scratch"
 
         // Check out ableC extensions included in default silver-ableC composition
         def extensions = [
@@ -100,6 +100,8 @@ def resolveSilverAbleC(ablec_base) {
             sh "./bootstrap-compile"
           }
         }
+        
+        melt.annotate("Silver-ableC jars from branch (fresh).")
       }
     }
 
