@@ -120,7 +120,7 @@ def checkoutExtension(ext) {
 // ./extensions/name         (where this extension is checked out)
 // ./extensions/more         (if given)
 //
-def prepareWorkspace(name, extensions=[], hasSilverAbleC=false) {
+def prepareWorkspace(name, extensions=[], usesSilverAbleC=false) {
   
   // Clean Silver-generated files from previous builds in this workspace
   melt.clearGenerated()
@@ -129,7 +129,7 @@ def prepareWorkspace(name, extensions=[], hasSilverAbleC=false) {
   def ablec_base = resolveHost()
   
   // Get Silver-ableC
-  def silver_ablec_base = hasSilverAbleC? resolveSilverAbleC(ablec_base) : null
+  def silver_ablec_base = usesSilverAbleC? resolveSilverAbleC(ablec_base) : null
   
   // Get this extension
   checkout([$class: 'GitSCM',
@@ -154,7 +154,7 @@ def prepareWorkspace(name, extensions=[], hasSilverAbleC=false) {
     // libcord, libgc, cilk headers:
     "C_INCLUDE_PATH=/project/melt/Software/ext-libs/usr/local/include",
     "LIBRARY_PATH=/project/melt/Software/ext-libs/usr/local/lib"
-  ] + (hasSilverAbleC? ["PATH+silver-ableC=${params.SILVER_ABLEC_BASE}/support/bin/"] : [])
+  ] + (usesSilverAbleC? ["PATH+silver-ableC=${silver_ablec_base}/support/bin/"] : [])
   
   return newenv
 }
@@ -208,9 +208,9 @@ def buildLibrarySilverAbleCExtension(extension_name, extensions=[]) {
 //
 // Do the above.
 //
-def internalBuildExtension(extension_name, extensions, hasLibrary, hasSilverAbleC) {
+def internalBuildExtension(extension_name, extensions, hasLibrary, usesSilverAbleC) {
 
-  melt.setProperties(silverBase: true, ablecBase: true, silverAblecBase: hasSilverAbleC)
+  melt.setProperties(silverBase: true, ablecBase: true, silverAblecBase: usesSilverAbleC)
 
   def isFastBuild = (params.ABLEC_GEN != 'no')
 
@@ -220,7 +220,7 @@ def internalBuildExtension(extension_name, extensions, hasLibrary, hasSilverAble
 
     stage ("Build") {
 
-      newenv = prepareWorkspace(extension_name, extensions, hasSilverAbleC)
+      newenv = prepareWorkspace(extension_name, extensions, usesSilverAbleC)
 
       withEnv(newenv) {
         dir("extensions/${extension_name}") {
