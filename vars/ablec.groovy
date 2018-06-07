@@ -55,28 +55,47 @@ def resolveHost() {
 def resolveSilverAbleC(ablec_base) {
 
   if (params.SILVER_ABLEC_BASE == 'silver-ableC') {
-    echo "Checking out and building our own copy of silver-ableC"
+    echo "Checking out our own copy of silver-ableC"
 
+    checkoutExtension("silver-ableC")
     // TODO: we *might* wish to melt.annotate if we're checking out a *branch* of silver-ableC, figure out how to check? and maybe consider whether we want that?
 
-    def extensions = [
-      "silver-ableC",
-      "ableC-closure",
-      "ableC-refcount-closure",
-      "ableC-templating"
-    ]
-    for (ext in extensions) {
-      checkoutExtension(ext)
-    }
-    
-    def newenv = melt.getSilverEnv() + [
-      "ABLEC_BASE=${ablec_base}",
-      "EXTS_BASE=${env.WORKSPACE}/extensions"
-    ]
+    // Try to obtain jars from previous builds of this branch of silver-ableC
+    echo "Trying to get jars from silver-ableC branch ${env.BRANCH_NAME}"
+    String branchJob = "/melt-umn/silver-ableC/${hudson.Util.rawEncode(env.BRANCH_NAME)}"
+    try {
+      // If the last build has artifacts, use those.
+      copyArtifacts(projectName: branchJob, selector: lastCompleted())
+      melt.annotate("Jars from branch (prev).")
+    } catch (hudson.AbortException exc2) {
+      try {
+        // If there is a last successful build, use those.
+        copyArtifacts(projectName: branchJob, selector: lastSuccessful())
+        melt.annotate("Jars from branch (successful).")
+      } catch (hudson.AbortException exc3) {
+        // That's okay, just go build it ourselves.
+        echo "Couldn't find dependencies, building silver-ableC from scratch"
 
-    withEnv(newenv) {
-      dir("${env.WORKSPACE}/extensions/silver-ableC") {
-        sh "./bootstrap-compile"
+        // Check out ableC extensions included in default silver-ableC composition
+        def extensions = [
+          "ableC-closure",
+          "ableC-refcount-closure",
+          "ableC-templating"
+        ]
+        for (ext in extensions) {
+          checkoutExtension(ext)
+        }
+
+        // Build it!
+        def newenv = melt.getSilverEnv() + [
+          "ABLEC_BASE=${ablec_base}",
+          "EXTS_BASE=${env.WORKSPACE}/extensions"
+        ]
+        withEnv(newenv) {
+          dir("${env.WORKSPACE}/extensions/silver-ableC") {
+            sh "./bootstrap-compile"
+          }
+        }
       }
     }
 
