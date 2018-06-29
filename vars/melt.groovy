@@ -5,10 +5,6 @@ import jenkins.model.Jenkins
 @groovy.transform.Field
 ARTIFACTS = '/export/scratch/melt-jenkins/custom-stable-dump'
 
-// Location of a Silver checkout (w/ jars)
-@groovy.transform.Field
-SILVER_WORKSPACE = '/export/scratch/melt-jenkins/custom-silver'
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // General notification of build failure.
@@ -95,7 +91,7 @@ def setProperties(Map args) {
   if (args.silverBase) {
     // We're obviously assuming there's only one machine Jenkins can use here.
     params << string(name: 'SILVER_BASE',
-                     defaultValue: SILVER_WORKSPACE,
+                     defaultValue: silver.getDefaultSilverBase(),
                      description: 'Silver installation path to use.')
   }
   
@@ -180,28 +176,6 @@ def doesJobExist(job) {
 
   error("melt.doesJobExist cannot understand '${job}'")
   return false
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// Compute the typical additions to the environment for building silver
-// projects from jenkins, using SILVER_BASE parameter
-//
-def getSilverEnv() {
-  // Notify when we're not using the normal silver build.
-  if (params.SILVER_BASE != SILVER_WORKSPACE) {
-    echo "\n\nCUSTOM SILVER IN USE.\nUsing: ${params.SILVER_BASE}\n\n"
-    annotate("Custom Silver.")
-  }
-  // We generate files in the workspace ./generated, essentially always
-  def GEN = "${env.WORKSPACE}/generated"
-  // Neat Jenkins trick to add things to PATH:
-  return [
-    "PATH+silver=${params.SILVER_BASE}/support/bin/",
-    "PATH+nailgun=:${params.SILVER_BASE}/support/nailgun/",
-    "SILVER_GEN=${GEN}"
-  ]
-  // Currently not setting SVFLAGS by default, but we could in the future
 }
 
 ////////////////////////////////////////////////////////////////////////////////

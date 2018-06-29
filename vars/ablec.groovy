@@ -91,7 +91,7 @@ def resolveSilverAbleC(ablec_base) {
         }
 
         // Build it!
-        def newenv = melt.getSilverEnv() + [
+        def newenv = silver.getSilverEnv() + [
           "ABLEC_BASE=${ablec_base}",
           "EXTS_BASE=${env.WORKSPACE}/extensions"
         ]
@@ -140,7 +140,7 @@ def checkoutExtension(ext) {
 //
 // ./generated/              (empty)
 // ./ableC/                  (if no ABLEC_BASE parameter is set)
-// ./extensions/silver-ableC (if requested no SILVER_ABLEC_BASE parameter is set)
+// ./extensions/silver-ableC (if requested and no SILVER_ABLEC_BASE parameter is set)
 // ./extensions/deps         (ditto for silver-ableC dependencies, if silver-ableC jars weren't available)
 // ./extensions/name         (where this extension is checked out)
 // ./extensions/more         (if given)
@@ -173,7 +173,7 @@ def prepareWorkspace(name, extensions=[], usesSilverAbleC=false) {
     checkoutExtension(ext)
   }
 
-  def newenv = melt.getSilverEnv() + [
+  def newenv = silver.getSilverEnv() + [
     "ABLEC_BASE=${ablec_base}",
     "EXTS_BASE=${env.WORKSPACE}/extensions",
     // libcord, libgc, cilk headers:

@@ -4,7 +4,7 @@ library "github.com/melt-umn/jenkins-lib@${env.BRANCH_NAME}"
 node {
   echo "Can we successfully access these constants"
   assert melt.ARTIFACTS == '/export/scratch/melt-jenkins/custom-stable-dump'
-  assert melt.SILVER_WORKSPACE == '/export/scratch/melt-jenkins/custom-silver'
+  assert silver.SILVER_WORKSPACE == '/export/scratch/melt-jenkins/custom-silver'
   
 //  // The latter variable wins in this test:
 //  withEnv(["VAR_ASDF=first", "VAR_ASDF=overridden"]) {
