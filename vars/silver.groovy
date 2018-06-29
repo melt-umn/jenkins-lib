@@ -69,7 +69,7 @@ def getSilverEnv() {
 def getDefaultSilverBase() {
   if (env.BRANCH_NAME == 'master' ||
       env.BRANCH_NAME == 'develop' ||
-      !doesJobExist("silver/${hudson.Util.rawEncode(env.BRANCH_NAME)}")) {
+      !doesJobExist("/melt-umn/silver/${hudson.Util.rawEncode(env.BRANCH_NAME)}")) {
     // We can just custom-silver
     return SILVER_WORKSPACE
   } else {
