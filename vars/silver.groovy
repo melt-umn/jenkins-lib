@@ -48,7 +48,7 @@ def getSilverEnv() {
   // Notify when we're not using the normal silver build.
   if (params.SILVER_BASE != SILVER_WORKSPACE) {
     echo "\n\nCUSTOM SILVER IN USE.\nUsing: ${params.SILVER_BASE}\n\n"
-    annotate("Custom Silver.")
+    melt.annotate("Custom Silver.")
   }
   // We generate files in the workspace ./generated, essentially always
   def GEN = "${env.WORKSPACE}/generated"
