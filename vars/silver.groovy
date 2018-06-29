@@ -27,7 +27,7 @@ def getSilverEnv() {
 
     // Try to obtain jars from previous builds.
     dir("${env.WORKSPACE}/silver") {
-      String branchJob = "/melt-umn/silver/${hudson.Util.rawEncode(branch)}"
+      String branchJob = "/melt-umn/silver/${hudson.Util.rawEncode(env.BRANCH_NAME)}"
       try {
         // If the last build has artifacts, use those.
         copyArtifacts(projectName: branchJob, selector: lastCompleted())
@@ -67,13 +67,13 @@ def getSilverEnv() {
 // if we can use custom-silver.
 //
 def getDefaultSilverBase() {
-  if (env.BRANCH_NAME == 'master' ||
-      env.BRANCH_NAME == 'develop' ||
-      !doesJobExist("/melt-umn/silver/${hudson.Util.rawEncode(env.BRANCH_NAME)}")) {
-    // We can just custom-silver
-    return SILVER_WORKSPACE
-  } else {
+  if (env.BRANCH_NAME != 'master' &&
+      env.BRANCH_NAME != 'develop' &&
+      doesJobExist("/melt-umn/silver/${hudson.Util.rawEncode(env.BRANCH_NAME)}")) {
     // We need to check out a fresh copy of silver
     return 'silver'
+  } else {
+    // We can just use custom-silver
+    return SILVER_WORKSPACE
   }
 }
