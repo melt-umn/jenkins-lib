@@ -12,6 +12,7 @@ SILVER_WORKSPACE = '/export/scratch/melt-jenkins/custom-silver'
 //
 def getSilverEnv() {
 
+  def SILVER_BASE = params.SILVER_BASE
   if (params.SILVER_BASE == 'silver') {
     echo "Checking out our own copy of silver"
 
@@ -25,8 +26,10 @@ def getSilverEnv() {
 
     // TODO: we *might* wish to melt.annotate if we're checking out a *branch* of Silver, figure out how to check? and maybe consider whether we want that?
 
+    SILVER_BASE = "${env.WORKSPACE}/silver/"
+
     // Try to obtain jars from previous builds.
-    dir("${env.WORKSPACE}/silver") {
+    dir(SILVER_BASE) {
       String branchJob = "/melt-umn/silver/${hudson.Util.rawEncode(env.BRANCH_NAME)}"
       try {
         // If the last build has artifacts, use those.
@@ -46,7 +49,7 @@ def getSilverEnv() {
   }
   
   // Notify when we're not using the normal silver build.
-  if (params.SILVER_BASE != SILVER_WORKSPACE) {
+  if (SILVER_BASE != SILVER_WORKSPACE) {
     echo "\n\nCUSTOM SILVER IN USE.\nUsing: ${params.SILVER_BASE}\n\n"
     melt.annotate("Custom Silver.")
   }
@@ -54,8 +57,8 @@ def getSilverEnv() {
   def GEN = "${env.WORKSPACE}/generated"
   // Neat Jenkins trick to add things to PATH:
   return [
-    "PATH+silver=${params.SILVER_BASE}/support/bin/",
-    "PATH+nailgun=:${params.SILVER_BASE}/support/nailgun/",
+    "PATH+silver=${SILVER_BASE}/support/bin/",
+    "PATH+nailgun=:${SILVER_BASE}/support/nailgun/",
     "SILVER_GEN=${GEN}"
   ]
   // Currently not setting SVFLAGS by default, but we could in the future
