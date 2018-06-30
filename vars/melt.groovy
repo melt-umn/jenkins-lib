@@ -92,7 +92,7 @@ def setProperties(Map args) {
     // We're obviously assuming there's only one machine Jenkins can use here.
     params << string(name: 'SILVER_BASE',
                      defaultValue: silver.getDefaultSilverBase(),
-                     description: 'Silver installation path to use.')
+                     description: 'Silver installation path to use. "silver" is a special value that indicates to check out our own copy')
   }
   
   if (args.ablecBase) {
