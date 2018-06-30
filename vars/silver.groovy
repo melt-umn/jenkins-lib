@@ -63,7 +63,11 @@ def resolveSilver() {
 // Compute the typical additions to the environment for building silver
 // projects from jenkins, using silver_base parameter
 //
-def getSilverEnv(silver_base=resolveSilver()) {
+def getSilverEnv(silver_base=null) {
+  if (silver_base == null) {
+    silver_base = resolveSilver()
+  }
+  
   // We generate files in the workspace ./generated, essentially always
   def GEN = "${env.WORKSPACE}/generated"
   // Neat Jenkins trick to add things to PATH:
