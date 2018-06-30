@@ -10,11 +10,11 @@ import jenkins.model.Jenkins
 //
 // Obtain a path to AbleC to use to build this extension
 //
-// e.g. def ablec_path = ablec.resolveHost()
+// e.g. def ablec_base = ablec.resolveAbleC()
 //
 // NOTE: prioritizes BRANCH_NAME over 'develop'
 //
-def resolveHost() {
+def resolveAbleC() {
 
   if (params.ABLEC_BASE == 'ableC') {
     echo "Checking out our own copy of ableC"
@@ -29,7 +29,7 @@ def resolveHost() {
 
     // TODO: we *might* wish to melt.annotate if we're checking out a *branch* of ablec, figure out how to check? and maybe consider whether we want that?
 
-    return "${env.WORKSPACE}/ableC/"
+    return "${env.WORKSPACE}/ableC"
   }
 
   echo "Using existing ableC workspace: ${params.ABLEC_BASE}"
@@ -48,11 +48,11 @@ def resolveHost() {
 //
 // Obtain a path to Silver-ableC to use to build this extension
 //
-// e.g. def silver_ablec_path = ablec.resolveSilverAbleC()
+// e.g. def silver_ablec_base = ablec.resolveSilverAbleC(silver_base, ablec_base)
 //
 // NOTE: prioritizes BRANCH_NAME over 'develop'
 //
-def resolveSilverAbleC(ablec_base) {
+def resolveSilverAbleC(silver_base, ablec_base) {
 
   if (params.SILVER_ABLEC_BASE == 'silver-ableC') {
     echo "Checking out our own copy of silver-ableC"
@@ -91,7 +91,7 @@ def resolveSilverAbleC(ablec_base) {
         }
 
         // Build it!
-        def newenv = silver.getSilverEnv() + [
+        def newenv = silver.getSilverEnv(silver_base) + [
           "ABLEC_BASE=${ablec_base}",
           "EXTS_BASE=${env.WORKSPACE}/extensions"
         ]
@@ -150,11 +150,14 @@ def prepareWorkspace(name, extensions=[], usesSilverAbleC=false) {
   // Clean Silver-generated files from previous builds in this workspace
   melt.clearGenerated()
 
+  // Get Silver
+  def silver_base = silver.resolveSilver()
+
   // Get AbleC (may grab generated files, too)
-  def ablec_base = resolveHost()
+  def ablec_base = resolveAbleC()
   
   // Get Silver-ableC
-  def silver_ablec_base = usesSilverAbleC? resolveSilverAbleC(ablec_base) : null
+  def silver_ablec_base = usesSilverAbleC? resolveSilverAbleC(silver_base, ablec_base) : null
   
   // Get this extension
   checkout([$class: 'GitSCM',
@@ -173,7 +176,7 @@ def prepareWorkspace(name, extensions=[], usesSilverAbleC=false) {
     checkoutExtension(ext)
   }
 
-  def newenv = silver.getSilverEnv() + [
+  def newenv = silver.getSilverEnv(silver_base) + [
     "ABLEC_BASE=${ablec_base}",
     "EXTS_BASE=${env.WORKSPACE}/extensions",
     // libcord, libgc, cilk headers:

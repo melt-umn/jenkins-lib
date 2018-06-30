@@ -7,14 +7,16 @@ SILVER_WORKSPACE = '/export/scratch/melt-jenkins/custom-silver'
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Compute the typical additions to the environment for building silver
-// projects from jenkins, using SILVER_BASE parameter
+// Obtain a path to Silver to use to build this project
 //
-def getSilverEnv() {
-
-  def SILVER_BASE = params.SILVER_BASE
+// e.g. def silver_base = silver.resolveSilver()
+//
+// NOTE: prioritizes BRANCH_NAME over 'develop'
+//
+def resolveSilver() {
+  
   if (params.SILVER_BASE == 'silver') {
-    echo "Checking out our own copy of silver"
+    echo "Checking out our own copy of Silver"
 
     checkout([$class: 'GitSCM',
               branches: [[name: "*/${env.BRANCH_NAME}"], [name: '*/develop']],
@@ -23,13 +25,11 @@ def getSilverEnv() {
                            [$class: 'CleanCheckout']],
               submoduleCfg: [],
               userRemoteConfigs: [[url: 'https://github.com/melt-umn/silver.git']]])
-
-    // TODO: we *might* wish to melt.annotate if we're checking out a *branch* of Silver, figure out how to check? and maybe consider whether we want that?
-
-    SILVER_BASE = "${env.WORKSPACE}/silver/"
+    
+    melt.annotate("Checkout Silver.")
 
     // Try to obtain jars from previous builds.
-    dir(SILVER_BASE) {
+    dir("${env.WORKSPACE}/silver") {
       String branchJob = "/melt-umn/silver/${hudson.Util.rawEncode(env.BRANCH_NAME)}"
       try {
         // If the last build has artifacts, use those.
@@ -46,19 +46,29 @@ def getSilverEnv() {
         }
       }
     }
+
+    return "${env.WORKSPACE}/silver"
   }
   
   // Notify when we're not using the normal silver build.
-  if (SILVER_BASE != SILVER_WORKSPACE) {
+  if (params.SILVER_BASE != SILVER_WORKSPACE) {
     echo "\n\nCUSTOM SILVER IN USE.\nUsing: ${params.SILVER_BASE}\n\n"
     melt.annotate("Custom Silver.")
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Compute the typical additions to the environment for building silver
+// projects from jenkins, using silver_base parameter
+//
+def getSilverEnv(silver_base=resolveSilver()) {
   // We generate files in the workspace ./generated, essentially always
   def GEN = "${env.WORKSPACE}/generated"
   // Neat Jenkins trick to add things to PATH:
   return [
-    "PATH+silver=${SILVER_BASE}/support/bin/",
-    "PATH+nailgun=:${SILVER_BASE}/support/nailgun/",
+    "PATH+silver=${silver_base}/support/bin/",
+    "PATH+nailgun=:${silver_base}/support/nailgun/",
     "SILVER_GEN=${GEN}"
   ]
   // Currently not setting SVFLAGS by default, but we could in the future
@@ -77,11 +87,12 @@ def getDefaultSilverBase() {
   
   def silverBranchExists = false
   node {
+    // Need to be running inside a node in order to check this
     silverBranchExists = melt.doesJobExist("/melt-umn/silver/${hudson.Util.rawEncode(env.BRANCH_NAME)}")
   }
   if (silverBranchExists) {
     // We need to check out a fresh copy of silver
-    return 'silver'
+    return "${env.WORKSPACE}/silver"
   } else {
     // We can just use custom-silver
     return SILVER_WORKSPACE
