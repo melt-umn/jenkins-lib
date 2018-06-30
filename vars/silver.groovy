@@ -70,9 +70,16 @@ def getSilverEnv() {
 // if we can use custom-silver.
 //
 def getDefaultSilverBase() {
-  if (env.BRANCH_NAME != 'master' &&
-      env.BRANCH_NAME != 'develop' &&
-      melt.doesJobExist("/melt-umn/silver/${hudson.Util.rawEncode(env.BRANCH_NAME)}")) {
+  if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'develop') {
+    // We can just use custom-silver
+    return SILVER_WORKSPACE
+  }
+  
+  def silverBranchExists = false
+  node {
+    silverBranchExists = melt.doesJobExist("/melt-umn/silver/${hudson.Util.rawEncode(env.BRANCH_NAME)}")
+  }
+  if (silverBranchExists) {
     // We need to check out a fresh copy of silver
     return 'silver'
   } else {
