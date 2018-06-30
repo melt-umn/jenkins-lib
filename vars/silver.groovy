@@ -93,7 +93,7 @@ def getDefaultSilverBase() {
   }
   if (silverBranchExists) {
     // We need to check out a fresh copy of silver
-    return "${env.WORKSPACE}/silver"
+    return 'silver'
   } else {
     // We can just use custom-silver
     return SILVER_WORKSPACE
