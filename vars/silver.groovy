@@ -55,6 +55,7 @@ def resolveSilver() {
     echo "\n\nCUSTOM SILVER IN USE.\nUsing: ${params.SILVER_BASE}\n\n"
     melt.annotate("Custom Silver.")
   }
+  return params.SILVER_BASE
 }
 
 ////////////////////////////////////////////////////////////////////////////////
