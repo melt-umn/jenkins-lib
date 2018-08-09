@@ -121,7 +121,7 @@ def resolveSilverAbleC(silver_base, ablec_base) {
 //
 // NOTE: prioritizes BRANCH_NAME over 'develop'
 //
-def checkoutExtension(ext) {
+def checkoutExtension(ext, url_base="https://github.com/melt-umn") {
 
   checkout([
     $class: 'GitSCM',
@@ -130,7 +130,7 @@ def checkoutExtension(ext) {
     extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "extensions/${ext}"],
                  [$class: 'CleanCheckout']],
     submoduleCfg: [],
-    userRemoteConfigs: [[url: "https://github.com/melt-umn/${ext}.git"]]])
+    userRemoteConfigs: [[url: "${url_base}/${ext}.git"]]])
 
 }
 
