@@ -19,13 +19,14 @@ def resolveAbleC() {
   if (params.ABLEC_BASE == 'ableC') {
     echo "Checking out our own copy of ableC"
 
-    checkout([$class: 'GitSCM',
-              branches: [[name: "*/${env.BRANCH_NAME}"], [name: '*/develop']],
-              doGenerateSubmoduleConfigurations: false,
-              extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'ableC'],
-                           [$class: 'CleanCheckout']],
-              submoduleCfg: [],
-              userRemoteConfigs: [[url: 'https://github.com/melt-umn/ableC.git']]])
+    checkout([
+        $class: 'GitSCM',
+        branches: [[name: "*/${env.BRANCH_NAME}"], [name: '*/develop']],
+        doGenerateSubmoduleConfigurations: false,
+        extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'ableC'],
+                     [$class: 'CleanCheckout']],
+        submoduleCfg: [],
+        userRemoteConfigs: [[url: 'https://github.com/melt-umn/ableC.git']]])
 
     // TODO: we *might* wish to melt.annotate if we're checking out a *branch* of ablec, figure out how to check? and maybe consider whether we want that?
 
@@ -160,16 +161,16 @@ def prepareWorkspace(name, extensions=[], usesSilverAbleC=false) {
   def silver_ablec_base = usesSilverAbleC? resolveSilverAbleC(silver_base, ablec_base) : null
   
   // Get this extension
-  checkout([$class: 'GitSCM',
-            branches: scm.branches,
-            doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
-            extensions: [
-              [$class: 'RelativeTargetDirectory', relativeTargetDir: "extensions/${name}"],
-              [$class: 'CleanCheckout']
-            ],
-            submoduleCfg: scm.submoduleCfg,
-            userRemoteConfigs: scm.userRemoteConfigs
-            ])
+  checkout([
+      $class: 'GitSCM',
+      branches: scm.branches,
+      doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
+      extensions: [
+        [$class: 'RelativeTargetDirectory', relativeTargetDir: "extensions/${name}"],
+        [$class: 'CleanCheckout']
+      ],
+      submoduleCfg: scm.submoduleCfg,
+      userRemoteConfigs: scm.userRemoteConfigs])
 
   // Get the other extensions, preferring same branch name over develop
   for (ext in extensions) {
