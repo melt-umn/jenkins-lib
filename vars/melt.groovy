@@ -171,7 +171,10 @@ def doesJobExist(job) {
   if (parts.length == 4) {
     assert parts[0] == ''
     // potentially very fragile, because maybe they change this in the future, but oh well
-    return 0 == sh(returnStatus: true, script: "(cd ${root}${parts[1]}/jobs/${parts[2]}/branches && grep '^${parts[3]}\$' */name-utf8.txt)")
+    // Try to deal better with shortened names: take the first and last 11 chars of the name,
+    // concat fragments with a *
+    def repoPattern = parts[1].take(11) + "*" + parts[1].drop(max(11, parts[1].length() - 11))
+    return 0 == sh(returnStatus: true, script: "(cd ${root}${repoPattern}/jobs/${parts[2]}/branches && grep '^${parts[3]}\$' */name-utf8.txt)")
   }
 
   error("melt.doesJobExist cannot understand '${job}'")
