@@ -35,12 +35,6 @@ def resolveAbleC() {
 
   echo "Using existing ableC workspace: ${params.ABLEC_BASE}"
   melt.annotate('Custom AbleC.')
-  if (params.ABLEC_GEN != 'no') {
-    echo "Using existing ableC generated files: ${params.ABLEC_GEN}"
-    sh "cp -r ${params.ABLEC_GEN}/* generated/"
-    // Freshen up generated parsers so .java is newer than .copper
-    sh 'find generated/ -name "Parser*java" | xargs touch'
-  }
 
   return params.ABLEC_BASE
 }
@@ -183,7 +177,15 @@ def prepareWorkspace(name, extensions=[], usesSilverAbleC=false) {
     // libcord, libgc, cilk headers:
     "C_INCLUDE_PATH=/project/melt/Software/ext-libs/usr/local/include",
     "LIBRARY_PATH=/project/melt/Software/ext-libs/usr/local/lib"
-  ] + (usesSilverAbleC? ["PATH+silver-ableC=${silver_ablec_base}/support/bin/"] : [])
+  ]
+
+  if (usesSilverAbleC) {
+    newenv << "PATH+silver-ableC=${silver_ablec_base}/support/bin/"
+  }
+  if (params.ABLEC_GEN != 'no') {
+    echo "Using existing ableC generated files: ${params.ABLEC_GEN}"
+    newenv << "SILVER_HOST_GEN=${params.ABLEC_GEN}"
+  }
   
   return newenv
 }
