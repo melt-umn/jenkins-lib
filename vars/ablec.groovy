@@ -90,6 +90,18 @@ def resolveSilverAbleC(silver_base, ablec_base) {
           "ABLEC_BASE=${ablec_base}",
           "EXTS_BASE=${env.WORKSPACE}/extensions"
         ]
+        if (params.SILVER_GEN != 'no' || params.ABLEC_GEN != 'no') {
+          def SILVER_HOST_GEN = ""
+          if (params.SILVER_GEN != 'no') {
+            echo "Using existing Silver generated files: ${params.SILVER_GEN}"
+            SILVER_HOST_GEN << "${params.SILVER_GEN}:"
+          }
+          if (params.ABLEC_GEN != 'no') {
+            echo "Using existing ableC generated files: ${params.ABLEC_GEN}"
+            SILVER_HOST_GEN << "${params.ABLEC_GEN}:"
+          }
+          newenv << "SILVER_HOST_GEN=${SILVER_HOST_GEN}"
+        }
         withEnv(newenv) {
           dir("${env.WORKSPACE}/extensions/silver-ableC") {
             sh "./bootstrap-compile"
