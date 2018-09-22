@@ -178,10 +178,14 @@ def doesJobExist(job) {
     // potentially very fragile, because maybe they change this in the future, but oh well.
     // Try to deal better with shortened names: take the first and last 11 chars of the name,
     // concat fragments with a *
+    // Take the first 11 characters
     def repoPattern = parts[2].take(11)
-    if (parts[2].length() > 11) {
-      repoPattern << "*" + parts[2].drop(Math.max(11, parts[2].length() - 11))
+    // If the total length is longer than 22, append a * in the middle
+    if (parts[2].length() > 22) {
+      repoPattern += "*"
     }
+    // Take the last 11 characters
+    repoPattern += parts[2].drop(Math.max(11, parts[2].length() - 11))
     return 0 == sh(returnStatus: true, script: "(cd ${root}${parts[1]}/jobs/${repoPattern}/branches && grep '^${parts[3]}\$' */name-utf8.txt)")
   }
 
