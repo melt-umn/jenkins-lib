@@ -180,7 +180,7 @@ def doesJobExist(job) {
     // concat fragments with a *
     def repoPattern = parts[2].take(11)
     if (parts[2].length() > 11) {
-      parts << "*" + parts[2].drop(Math.max(11, parts[2].length() - 11))
+      repoPattern << "*" + parts[2].drop(Math.max(11, parts[2].length() - 11))
     }
     return 0 == sh(returnStatus: true, script: "(cd ${root}${parts[1]}/jobs/${repoPattern}/branches && grep '^${parts[3]}\$' */name-utf8.txt)")
   }
