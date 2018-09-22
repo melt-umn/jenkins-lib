@@ -175,10 +175,13 @@ def doesJobExist(job) {
   // '/path/repo/branch' (okay because in branch names / becomes %2F)
   if (parts.length == 4) {
     assert parts[0] == ''
-    // potentially very fragile, because maybe they change this in the future, but oh well
+    // potentially very fragile, because maybe they change this in the future, but oh well.
     // Try to deal better with shortened names: take the first and last 11 chars of the name,
     // concat fragments with a *
-    def repoPattern = parts[2].take(11) + "*" + parts[2].drop(Math.max(11, parts[2].length() - 11))
+    def repoPattern = parts[2].take(11)
+    if (parts[2].length() > 11) {
+      parts << "*" + parts[2].drop(Math.max(11, parts[2].length() - 11))
+    }
     return 0 == sh(returnStatus: true, script: "(cd ${root}${parts[1]}/jobs/${repoPattern}/branches && grep '^${parts[3]}\$' */name-utf8.txt)")
   }
 
