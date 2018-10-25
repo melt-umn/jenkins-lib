@@ -16,7 +16,7 @@ SILVER_WORKSPACE = '/export/scratch/melt-jenkins/custom-silver'
 def resolveSilver() {
   
   if (params.SILVER_BASE == 'silver') {
-    echo "Checking out our own copy of Silver"
+    echo "Checking out our own copy of Silver (branch ${env.BRANCH_NAME})"
 
     checkout([$class: 'GitSCM',
               branches: [[name: "*/${env.BRANCH_NAME}"], [name: '*/develop']],

@@ -17,7 +17,7 @@ import jenkins.model.Jenkins
 def resolveAbleC() {
 
   if (params.ABLEC_BASE == 'ableC') {
-    echo "Checking out our own copy of ableC"
+    echo "Checking out our own copy of ableC (branch ${env.BRANCH_NAME})"
 
     checkout([
         $class: 'GitSCM',
@@ -117,6 +117,7 @@ def resolveSilverAbleC(silver_base, ablec_base) {
 // NOTE: prioritizes BRANCH_NAME over 'develop'
 //
 def checkoutExtension(ext, url_base="https://github.com/melt-umn") {
+  echo "Checking out our own copy of extension ${ext} (branch ${env.BRANCH_NAME})"
 
   checkout([
     $class: 'GitSCM',
