@@ -79,7 +79,8 @@ def resolveSilverAbleC(silver_base, ablec_base) {
         def extensions = [
           "ableC-closure",
           "ableC-refcount-closure",
-          "ableC-templating"
+          "ableC-templating",
+          "ableC-string"
         ]
         for (ext in extensions) {
           checkoutExtension(ext)
