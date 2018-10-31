@@ -80,7 +80,8 @@ def resolveSilverAbleC(silver_base, ablec_base) {
           "ableC-closure",
           "ableC-refcount-closure",
           "ableC-templating",
-          "ableC-string"
+          "ableC-string",
+          "ableC-algebraic-data-types"
         ]
         for (ext in extensions) {
           checkoutExtension(ext)
