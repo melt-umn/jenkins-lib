@@ -122,9 +122,10 @@ def setProperties(Map args) {
     params << string(name: 'OVERRIDE_JARS',
                      defaultValue: 'no',
                      description: 'Path on coldpress to obtain jars from instead of using fetch-jars. "no" means find jars normally. "develop" means use the normal latest successful jars from the develop branch.')
-    params << booleanParam(name: 'FETCH_COPPER_JARS',
-                           defaultValue: false,
-                           description: 'If selected, use the latest Copper jars instead of the ones archived from the latest/last successful build.')
+    // TODO: Apparently boolean params are buggy?
+    params << string(name: 'FETCH_COPPER_JARS',
+                     defaultValue: 'no',
+                     description: 'If "yes", use the latest Copper jars instead of the ones archived from the latest/last successful build.')
   }
   
   if (params) {
