@@ -295,7 +295,7 @@ def internalBuildExtension(extension_name, extensions, hasLibrary, usesSilverAbl
             echo "Fast build: only doing MDA, skipping MWDA (done already)"
             sh "make mda"
           } else {
-            sh "make analyses"
+            sh "make analyses -j2"
           }
         }
       }
