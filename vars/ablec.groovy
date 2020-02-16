@@ -123,6 +123,13 @@ def resolveSilverAbleC(silver_base, ablec_base) {
 def checkoutExtension(ext, url_base="https://github.com/melt-umn") {
   echo "Checking out our own copy of extension ${ext} (branch ${env.BRANCH_NAME})"
 
+  /* Failed attempt at doing this the right way:
+  checkout resolveScm(
+    source: git(url: "${url_base}/${ext}.git"),
+    targets: [env.BRANCH_NAME, 'develop'],
+    extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "extensions/${ext}"],
+                 [$class: 'CleanCheckout']])
+   */
   checkout([
     $class: 'GitSCM',
     branches: [[name: "*/${env.BRANCH_NAME}"], [name: '*/develop']],
