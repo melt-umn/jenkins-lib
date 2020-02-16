@@ -17,7 +17,7 @@ import jenkins.model.Jenkins
 def resolveAbleC() {
 
   if (params.ABLEC_BASE == 'ableC') {
-    branch = melt.doesBranchExist(env.BRANCH_NAME, ext, url_base)? env.BRANCH_NAME : "develop"
+    branch = melt.doesBranchExist(env.BRANCH_NAME, "ableC")? env.BRANCH_NAME : "develop"
     echo "Checking out our own copy of ableC (branch ${branch})"
 
     checkout([

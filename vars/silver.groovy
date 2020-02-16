@@ -16,7 +16,7 @@ SILVER_WORKSPACE = '/export/scratch/melt-jenkins/custom-silver'
 def resolveSilver() {
   
   if (params.SILVER_BASE == 'silver') {
-    branch = melt.doesBranchExist(env.BRANCH_NAME, ext, url_base)? env.BRANCH_NAME : "develop"
+    branch = melt.doesBranchExist(env.BRANCH_NAME, "silver")? env.BRANCH_NAME : "develop"
     echo "Checking out our own copy of Silver (branch ${branch})"
 
     checkout([
