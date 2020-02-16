@@ -16,15 +16,17 @@ SILVER_WORKSPACE = '/export/scratch/melt-jenkins/custom-silver'
 def resolveSilver() {
   
   if (params.SILVER_BASE == 'silver') {
-    echo "Checking out our own copy of Silver (branch ${env.BRANCH_NAME})"
+    branch = melt.doesBranchExist(env.BRANCH_NAME, ext, url_base)? env.BRANCH_NAME : "develop"
+    echo "Checking out our own copy of Silver (branch ${branch})"
 
-    checkout([$class: 'GitSCM',
-              branches: [[name: "*/${env.BRANCH_NAME}"], [name: '*/develop']],
-              doGenerateSubmoduleConfigurations: false,
-              extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'silver'],
-                           [$class: 'CleanCheckout']],
-              submoduleCfg: [],
-              userRemoteConfigs: [[url: 'https://github.com/melt-umn/silver.git']]])
+    checkout([
+        $class: 'GitSCM',
+        branches: [[name: "*/${branch}"]],
+        doGenerateSubmoduleConfigurations: false,
+        extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'silver'],
+                     [$class: 'CleanCheckout']],
+        submoduleCfg: [],
+        userRemoteConfigs: [[url: 'https://github.com/melt-umn/silver.git']]])
     
     melt.annotate("Checkout Silver.")
 

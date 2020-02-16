@@ -199,6 +199,15 @@ def doesJobExist(job) {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
+// Find out if a branch exists
+//
+def doesBranchExist(branch, repo, url_base) {
+  rc = sh(script: "git ls-remote --heads --exit-code ${url_base}/${repo}.git ${branch}", returnStatus: true)
+  return rc == 0
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
 // Deletes generated files, and ensures the generated directory still exists.
 //
 def clearGenerated() {

@@ -17,11 +17,12 @@ import jenkins.model.Jenkins
 def resolveAbleC() {
 
   if (params.ABLEC_BASE == 'ableC') {
-    echo "Checking out our own copy of ableC (branch ${env.BRANCH_NAME})"
+    branch = melt.doesBranchExist(env.BRANCH_NAME, ext, url_base)? env.BRANCH_NAME : "develop"
+    echo "Checking out our own copy of ableC (branch ${branch})"
 
     checkout([
         $class: 'GitSCM',
-        branches: [[name: "*/${env.BRANCH_NAME}"], [name: '*/develop']],
+        branches: [[name: "*/${branch}"]],
         doGenerateSubmoduleConfigurations: false,
         extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'ableC'],
                      [$class: 'CleanCheckout']],
@@ -121,23 +122,25 @@ def resolveSilverAbleC(silver_base, ablec_base) {
 // NOTE: prioritizes BRANCH_NAME over 'develop'
 //
 def checkoutExtension(ext, url_base="https://github.com/melt-umn") {
-  echo "Checking out our own copy of extension ${ext} (branch ${env.BRANCH_NAME})"
-
-  /* Failed attempt at doing this the right way:
+  /* The *right* way of doing this, I think.  Unfourtunately this seems to be bugged?
   checkout resolveScm(
     source: git(url: "${url_base}/${ext}.git"),
     targets: [env.BRANCH_NAME, 'develop'],
     extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "extensions/${ext}"],
                  [$class: 'CleanCheckout']])
    */
+  
+  branch = melt.doesBranchExist(env.BRANCH_NAME, ext, url_base)? env.BRANCH_NAME : "develop"
+  echo "Checking out our own copy of extension ${ext} (branch ${branch})"
+  
   checkout([
-    $class: 'GitSCM',
-    branches: [[name: "*/${env.BRANCH_NAME}"], [name: '*/develop']],
-    doGenerateSubmoduleConfigurations: false,
-    extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "extensions/${ext}"],
-                 [$class: 'CleanCheckout']],
-    submoduleCfg: [],
-    userRemoteConfigs: [[url: "${url_base}/${ext}.git"]]])
+      $class: 'GitSCM',
+      branches: [[name: "*/${branch}"]],
+      doGenerateSubmoduleConfigurations: false,
+      extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "extensions/${ext}"],
+                   [$class: 'CleanCheckout']],
+      submoduleCfg: [],
+      userRemoteConfigs: [[url: "${url_base}/${ext}.git"]]])
 
 }
 
