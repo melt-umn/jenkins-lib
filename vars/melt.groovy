@@ -166,7 +166,7 @@ def doesJobExist(job) {
   // due to the sandbox we're placed in here.
 
   def parts = job.split('/')
-  def root = '/var/lib/jenkins/jobs/'
+  def root = '~/jobs/'
   // 'jobname'
   if (parts.length == 1) {
     return fileExists(root + parts[0])
