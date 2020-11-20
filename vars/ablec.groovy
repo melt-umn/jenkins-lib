@@ -159,15 +159,6 @@ def prepareWorkspace(name, extensions=[], usesSilverAbleC=false) {
   
   // Clean Silver-generated files from previous builds in this workspace
   melt.clearGenerated()
-
-  // Get Silver
-  def silver_base = silver.resolveSilver()
-
-  // Get AbleC
-  def ablec_base = resolveAbleC()
-  
-  // Get Silver-ableC
-  def silver_ablec_base = usesSilverAbleC? resolveSilverAbleC(silver_base, ablec_base) : null
   
   // Get this extension
   checkout([
@@ -185,6 +176,17 @@ def prepareWorkspace(name, extensions=[], usesSilverAbleC=false) {
   for (ext in extensions) {
     checkoutExtension(ext)
   }
+
+  // Get Silver
+  def silver_base = silver.resolveSilver()
+
+  // Get AbleC
+  def ablec_base = resolveAbleC()
+
+  // Get Silver-ableC
+  // This happens last, so that if we need to bootstrap silver-ableC
+  // it doesn't get overwritten by extension checkout
+  def silver_ablec_base = usesSilverAbleC? resolveSilverAbleC(silver_base, ablec_base) : null
 
   def newenv = silver.getSilverEnv(silver_base) + [
     "ABLEC_BASE=${ablec_base}",
