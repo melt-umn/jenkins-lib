@@ -5,6 +5,10 @@ import jenkins.model.Jenkins
 @groovy.transform.Field
 ARTIFACTS = '/export/scratch/melt-jenkins/custom-stable-dump'
 
+// Location where we dump per-commit artifacts
+@groovy.transform.Field
+COMMIT_ARTIFACTS = '/export/scratch/melt-jenkins/commit-artifacts'
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // General notification of build failure.
@@ -260,5 +264,13 @@ def annotate(String anno) {
   } else {
     currentBuild.description += " ${anno}"
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Archives per-commit artifacts
+//
+def archiveCommitArtifacts(String artifacts) {
+  sh "cp ${artifacts} ${COMMIT_ARTIFACTS}/${env.GIT_COMMIT}"
 }
 
