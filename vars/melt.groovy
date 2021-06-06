@@ -271,6 +271,7 @@ def annotate(String anno) {
 // Archives per-commit artifacts
 //
 def archiveCommitArtifacts(String artifacts) {
-  sh "cp ${artifacts} ${COMMIT_ARTIFACTS}/${env.GIT_COMMIT}"
+  sh "mkdir -p ${COMMIT_ARTIFACTS}/$(git rev-parse HEAD)"
+  sh "cp ${artifacts} $(git rev-parse HEAD)"
 }
 
