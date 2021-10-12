@@ -292,7 +292,7 @@ def internalBuildExtension(extension_name, extensions, hasLibrary, usesSilverAbl
       stage ("Libraries") {
         withEnv(newenv) {
           dir("extensions/${extension_name}") {
-            sh "make libs -j8"
+            sh "make libs -j"
           }
         }
       }
@@ -301,7 +301,7 @@ def internalBuildExtension(extension_name, extensions, hasLibrary, usesSilverAbl
     stage ("Examples") {
       withEnv(newenv) {
         dir("extensions/${extension_name}") {
-          sh "make examples -j8"
+          sh "make examples -j"
         }
       }
     }
@@ -311,9 +311,9 @@ def internalBuildExtension(extension_name, extensions, hasLibrary, usesSilverAbl
         dir("extensions/${extension_name}") {
           if (isFastBuild) {
             echo "Fast build: only doing MDA, skipping MWDA (done already)"
-            sh "make mda"
+            sh "make mda -j"
           } else {
-            sh "make analyses -j2"
+            sh "make analyses -j"
           }
         }
       }
@@ -326,7 +326,7 @@ def internalBuildExtension(extension_name, extensions, hasLibrary, usesSilverAbl
             echo "Fast build: copying ableC.jar into tests"
             sh "cp examples/ableC.jar tests/"
           }
-          sh "make test -j8"
+          sh "make test -j"
         }
       }
     }
