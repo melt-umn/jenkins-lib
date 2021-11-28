@@ -270,8 +270,11 @@ def annotate(String anno) {
 //
 // Archives per-commit artifacts
 //
-def archiveCommitArtifacts(String artifacts) {
-  def commitDir = "${COMMIT_ARTIFACTS}/\$(git rev-parse HEAD)"
+def archiveCommitArtifacts(String artifacts, String subdir=null) {
+  def commitBaseDir = COMMIT_ARTIFACTS;
+  if(subdir != null)
+    commitBaseDir += "/${subdir}";
+  def commitDir = "${commitBaseDir}/\$(git rev-parse HEAD)"
   sh "mkdir -p ${commitDir}"
   sh "cp ${artifacts} ${commitDir}"
 }
