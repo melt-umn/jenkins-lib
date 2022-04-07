@@ -9,9 +9,6 @@ ARTIFACTS = '/export/scratch/melt-jenkins/custom-stable-dump'
 @groovy.transform.Field
 COMMIT_ARTIFACTS = '/export/scratch/melt-jenkins/commit-artifacts'
 
-// Max load limit on build server, passed to make -l
-LOAD_LIMIT=60
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // General notification of build failure.

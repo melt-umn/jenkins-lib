@@ -280,7 +280,7 @@ def internalBuildExtension(extension_name, extensions, hasLibrary, usesSilverAbl
         dir("extensions/${extension_name}") {
           if (isFastBuild) {
             echo "Fast build: doing MWDA as part of initial build"
-            make(["clean", "build"], "SVFLAGS=${SVFLAGS} --warn-all --warn-error")
+            make(["clean", "build"], 'SVFLAGS=${SVFLAGS} --warn-all --warn-error')
           } else {
             make(["clean", "build"])
           }
@@ -337,5 +337,5 @@ def internalBuildExtension(extension_name, extensions, hasLibrary, usesSilverAbl
 }
 
 def make(targets, options="") {
-  sh "make ${options} ${targets.join(' ')} -j -l ${melt.LOAD_LIMIT}"
+  sh "make ${options} ${targets.join(' ')} -j -l 60"
 }
