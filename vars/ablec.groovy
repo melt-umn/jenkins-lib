@@ -194,7 +194,6 @@ def prepareWorkspace(name, extensions=[], usesSilverAbleC=false) {
     // libcord, libgc, cilk headers:
     "C_INCLUDE_PATH=/project/melt/Software/ext-libs/usr/local/include",
     "LIBRARY_PATH=/project/melt/Software/ext-libs/usr/local/lib",
-    "MAKEOPTIONS=-j -l 60"
   ]
 
   if (usesSilverAbleC) {
@@ -281,9 +280,9 @@ def internalBuildExtension(extension_name, extensions, hasLibrary, usesSilverAbl
         dir("extensions/${extension_name}") {
           if (isFastBuild) {
             echo "Fast build: doing MWDA as part of initial build"
-            sh 'make "SVFLAGS=${SVFLAGS} --warn-all --warn-error" clean build'
+            make(["clean", "build"], "SVFLAGS=${SVFLAGS} --warn-all --warn-error")
           } else {
-            sh 'make clean build'
+            make(["clean", "build"])
           }
         }
       }
@@ -293,7 +292,7 @@ def internalBuildExtension(extension_name, extensions, hasLibrary, usesSilverAbl
       stage ("Libraries") {
         withEnv(newenv) {
           dir("extensions/${extension_name}") {
-            sh "make libs"
+            make(["libs"])
           }
         }
       }
@@ -302,7 +301,7 @@ def internalBuildExtension(extension_name, extensions, hasLibrary, usesSilverAbl
     stage ("Examples") {
       withEnv(newenv) {
         dir("extensions/${extension_name}") {
-          sh "make examples"
+          make(["examples"])
         }
       }
     }
@@ -312,9 +311,9 @@ def internalBuildExtension(extension_name, extensions, hasLibrary, usesSilverAbl
         dir("extensions/${extension_name}") {
           if (isFastBuild) {
             echo "Fast build: only doing MDA, skipping MWDA (done already)"
-            sh "make mda"
+            make(["mda"])
           } else {
-            sh "make analyses"
+            make(["analyses"])
           }
         }
       }
@@ -327,7 +326,7 @@ def internalBuildExtension(extension_name, extensions, hasLibrary, usesSilverAbl
             echo "Fast build: copying ableC.jar into tests"
             sh "cp examples/ableC.jar tests/"
           }
-          sh "make test"
+          make(["test"])
         }
       }
     }
@@ -337,3 +336,6 @@ def internalBuildExtension(extension_name, extensions, hasLibrary, usesSilverAbl
   }
 }
 
+def make(targets, options="") {
+  sh "make ${options} ${targets.join(' ')} -j -l ${melt.LOAD_LIMIT}"
+}
