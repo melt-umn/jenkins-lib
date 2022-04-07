@@ -193,7 +193,8 @@ def prepareWorkspace(name, extensions=[], usesSilverAbleC=false) {
     "EXTS_BASE=${env.WORKSPACE}/extensions",
     // libcord, libgc, cilk headers:
     "C_INCLUDE_PATH=/project/melt/Software/ext-libs/usr/local/include",
-    "LIBRARY_PATH=/project/melt/Software/ext-libs/usr/local/lib"
+    "LIBRARY_PATH=/project/melt/Software/ext-libs/usr/local/lib",
+    "MAKEOPTIONS=-j -l 60"
   ]
 
   if (usesSilverAbleC) {
@@ -292,7 +293,7 @@ def internalBuildExtension(extension_name, extensions, hasLibrary, usesSilverAbl
       stage ("Libraries") {
         withEnv(newenv) {
           dir("extensions/${extension_name}") {
-            sh "make libs -j"
+            sh "make libs"
           }
         }
       }
@@ -301,7 +302,7 @@ def internalBuildExtension(extension_name, extensions, hasLibrary, usesSilverAbl
     stage ("Examples") {
       withEnv(newenv) {
         dir("extensions/${extension_name}") {
-          sh "make examples -j"
+          sh "make examples"
         }
       }
     }
@@ -311,9 +312,9 @@ def internalBuildExtension(extension_name, extensions, hasLibrary, usesSilverAbl
         dir("extensions/${extension_name}") {
           if (isFastBuild) {
             echo "Fast build: only doing MDA, skipping MWDA (done already)"
-            sh "make mda -j"
+            sh "make mda"
           } else {
-            sh "make analyses -j"
+            sh "make analyses"
           }
         }
       }
@@ -326,7 +327,7 @@ def internalBuildExtension(extension_name, extensions, hasLibrary, usesSilverAbl
             echo "Fast build: copying ableC.jar into tests"
             sh "cp examples/ableC.jar tests/"
           }
-          sh "make test -j"
+          sh "make test"
         }
       }
     }
