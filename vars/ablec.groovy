@@ -191,9 +191,9 @@ def prepareWorkspace(name, extensions=[], usesSilverAbleC=false) {
   def newenv = silver.getSilverEnv(silver_base) + [
     "ABLEC_BASE=${ablec_base}",
     "EXTS_BASE=${env.WORKSPACE}/extensions",
-    // libcord, libgc, cilk headers:
-    "C_INCLUDE_PATH=/project/melt/Software/ext-libs/usr/local/include",
-    "LIBRARY_PATH=/project/melt/Software/ext-libs/usr/local/lib",
+    // cilk headers:
+    "C_INCLUDE_PATH=/export/scratch/thirdparty/opencilk-2.0.1/lib/clang/14.0.6/include/cilk/include",
+    "LIBRARY_PATH=/export/scratch/thirdparty/opencilk-2.0.1/lib/clang/14.0.6/lib/x86_64-unknown-linux-gnu",
   ]
 
   if (usesSilverAbleC) {
