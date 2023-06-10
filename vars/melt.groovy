@@ -170,7 +170,7 @@ def doesJobExist(job) {
   // due to the sandbox we're placed in here.
 
   def parts = job.split('/')
-  def root = '~/jobs/'
+  def root = '/melt/jenkins/jenkins-home/jobs/'
   // 'jobname'
   if (parts.length == 1) {
     return fileExists(root + parts[0])
