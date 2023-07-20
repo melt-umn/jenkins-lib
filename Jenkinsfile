@@ -39,5 +39,10 @@ node {
 //  }
 
   echo "isExecutorAvailable: " + melt.isExecutorAvailable()
+
+  waitUntil { melt.isExecutorAvailable() }
+
+  echo "executor available"
+
 }
 
