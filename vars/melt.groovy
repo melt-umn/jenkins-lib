@@ -283,6 +283,7 @@ def archiveCommitArtifacts(String artifacts) {
 def isExecutorAvailable() {
   for (node in jenkins.model.Jenkins.instance.nodes) {
     def computer = node.toComputer()   /* computer behind the node */
+    echo "busy/total: " + computer.countBusy() + ", " + computer.countExecutors()
     if (computer.countBusy() < computer.countExecutors()) {
       return true
     }
