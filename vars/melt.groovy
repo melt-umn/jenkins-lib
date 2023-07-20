@@ -281,9 +281,8 @@ def archiveCommitArtifacts(String artifacts) {
 // Determine if there is an available executor to start building a job immediately.
 //
 def isExecutorAvailable() {
-  for (node in jenkins.model.Jenkins.instance.nodes) {
-    def computer = node.toComputer()   /* computer behind the node */
-    echo "busy/total: " + computer.countBusy() + ", " + computer.countExecutors()
+  for (computer in Jenkins.instance.computers) {
+    echo computer.countExecutors() + " total executors, " + computer.countBusy() + " busy"
     if (computer.countBusy() < computer.countExecutors()) {
       return true
     }
