@@ -37,6 +37,7 @@ node {
 //      sh 'echo ${WORKSPACE}'
 //    }
 //  }
-  
+
+  echo "isExecutorAvailable: " + melt.isExecutorAvailable()
 }
 

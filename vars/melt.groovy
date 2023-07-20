@@ -276,3 +276,16 @@ def archiveCommitArtifacts(String artifacts) {
   sh "cp ${artifacts} ${commitDir}"
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//
+// Determine if there is an available executor to start building a job immediately.
+//
+def isExecutorAvailable() {
+  for (computer in Jenkins.instance.computers) {
+    echo computer.countExecutors() + " total executors, " + computer.countBusy() + " busy"
+    if (computer.countBusy() < computer.countExecutors()) {
+      return true
+    }
+  }
+  return false
+}
