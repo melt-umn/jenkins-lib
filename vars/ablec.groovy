@@ -108,7 +108,7 @@ def resolveSilverAbleC(silver_base, ablec_base) {
     return "${env.WORKSPACE}/extensions/silver-ableC/"
   }
   
-  // We assume that the extension dependancies of silver-ableC are already checked out as well
+  // We assume that the extension dependencies of silver-ableC are already checked out as well
   echo "Using existing silver-ableC workspace: ${params.SILVER_ABLEC_BASE}"
   melt.annotate('Custom Silver-ableC.')
   
@@ -155,7 +155,7 @@ def checkoutExtension(ext, url_base="https://github.com/melt-umn") {
 // ./extensions/name         (where this extension is checked out)
 // ./extensions/more         (if given)
 //
-def prepareWorkspace(name, extensions=[], usesSilverAbleC=false) {
+def prepareWorkspace(name, usesSilverAbleC=false) {
   
   // Clean Silver-generated files from previous builds in this workspace
   melt.clearGenerated()
@@ -172,8 +172,16 @@ def prepareWorkspace(name, extensions=[], usesSilverAbleC=false) {
       submoduleCfg: scm.submoduleCfg,
       userRemoteConfigs: scm.userRemoteConfigs])
 
+  // Get the dependencies of this extension from its Makefile
+  def extensions = []
+  dir ("extensions/${name}") {
+    extensions = sh(returnStdout: true, script: "grep 'EXT_DEPS *=.*' Makefile | sed 's/EXT_DEPS *=//'").tokenize()
+  }
+  echo "Dependencies: ${extensions}"
+
   // Get the other extensions, preferring same branch name over develop
   for (ext in extensions) {
+    echo "Checking out dependency: ${ext}"
     checkoutExtension(ext)
   }
 
@@ -218,10 +226,9 @@ def prepareWorkspace(name, extensions=[], usesSilverAbleC=false) {
 // A normal AbleC extension build. (see: ableC-skeleton)
 //
 // extension_name: the name of this extension, the 'scm' object should reference
-// extensions: the other extensions this extension depends upon
 //
-def buildNormalExtension(extension_name, extensions=[]) {
-  internalBuildExtension(extension_name, extensions, false, false)
+def buildNormalExtension(extension_name) {
+  internalBuildExtension(extension_name, false, false)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -229,10 +236,9 @@ def buildNormalExtension(extension_name, extensions=[]) {
 // An AbleC extension build with a C library. (see: ableC-lib-skeleton)
 //
 // extension_name: the name of this extension, the 'scm' object should reference
-// extensions: the other extensions this extension depends upon
 //
-def buildLibraryExtension(extension_name, extensions=[]) {
-  internalBuildExtension(extension_name, extensions, true, false)
+def buildLibraryExtension(extension_name) {
+  internalBuildExtension(extension_name, true, false)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -240,10 +246,9 @@ def buildLibraryExtension(extension_name, extensions=[]) {
 // An AbleC extension build requiring silver-ableC. (see: ableC-closure)
 //
 // extension_name: the name of this extension, the 'scm' object should reference
-// extensions: the other extensions this extension depends upon
 //
-def buildSilverAbleCExtension(extension_name, extensions=[]) {
-  internalBuildExtension(extension_name, extensions, false, true)
+def buildSilverAbleCExtension(extension_name) {
+  internalBuildExtension(extension_name, false, true)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -252,21 +257,18 @@ def buildSilverAbleCExtension(extension_name, extensions=[]) {
 // (see: ableC-nondeterministic-search)
 //
 // extension_name: the name of this extension, the 'scm' object should reference
-// extensions: the other extensions this extension depends upon
 //
-def buildLibrarySilverAbleCExtension(extension_name, extensions=[]) {
-  internalBuildExtension(extension_name, extensions, true, true)
+def buildLibrarySilverAbleCExtension(extension_name) {
+  internalBuildExtension(extension_name, true, true)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Do the above.
 //
-def internalBuildExtension(extension_name, extensions, hasLibrary, usesSilverAbleC) {
+def internalBuildExtension(extension_name, hasLibrary, usesSilverAbleC) {
 
   melt.setProperties(silverBase: true, ablecBase: true, silverAblecBase: usesSilverAbleC)
-
-  def isFastBuild = (params.ABLEC_GEN != 'no')
 
   melt.trynode(extension_name) {
 
@@ -274,16 +276,11 @@ def internalBuildExtension(extension_name, extensions, hasLibrary, usesSilverAbl
 
     stage ("Build") {
 
-      newenv = prepareWorkspace(extension_name, extensions, usesSilverAbleC)
+      newenv = prepareWorkspace(extension_name, usesSilverAbleC)
 
       withEnv(newenv) {
         dir("extensions/${extension_name}") {
-          if (isFastBuild) {
-            echo "Fast build: doing MWDA as part of initial build"
-            make(["clean", "build"], 'SVFLAGS="${SVFLAGS} --warn-all --warn-error"')
-          } else {
-            make(["clean", "build"])
-          }
+          make(["clean", "build"])
         }
       }
     }
@@ -292,7 +289,7 @@ def internalBuildExtension(extension_name, extensions, hasLibrary, usesSilverAbl
       stage ("Libraries") {
         withEnv(newenv) {
           dir("extensions/${extension_name}") {
-            make(["libs"])
+            make(["libraries"])
           }
         }
       }
@@ -309,12 +306,7 @@ def internalBuildExtension(extension_name, extensions, hasLibrary, usesSilverAbl
     stage ("Modular Analyses") {
       withEnv(newenv) {
         dir("extensions/${extension_name}") {
-          if (isFastBuild) {
-            echo "Fast build: only doing MDA, skipping MWDA (done already)"
-            make(["mda"])
-          } else {
-            make(["analyses"])
-          }
+          make(["analyses"])
         }
       }
     }
@@ -322,10 +314,6 @@ def internalBuildExtension(extension_name, extensions, hasLibrary, usesSilverAbl
     stage ("Test") {
       withEnv(newenv) {
         dir("extensions/${extension_name}") {
-          if (isFastBuild) {
-            echo "Fast build: copying ableC.jar into tests"
-            sh "cp examples/ableC.jar tests/"
-          }
           make(["test"])
         }
       }
