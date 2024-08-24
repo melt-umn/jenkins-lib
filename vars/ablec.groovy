@@ -181,7 +181,6 @@ def prepareWorkspace(name, usesSilverAbleC=false) {
 
   // Get the other extensions, preferring same branch name over develop
   for (ext in extensions) {
-    echo "Checking out dependency: ${ext}"
     checkoutExtension(ext)
   }
 
@@ -207,16 +206,6 @@ def prepareWorkspace(name, usesSilverAbleC=false) {
   if (usesSilverAbleC) {
     newenv << "PATH+silver-ableC=${silver_ablec_base}/support/bin/"
   }
-  def SILVER_HOST_GEN = []
-  if (params.SILVER_GEN != 'no') {
-    echo "Using existing Silver generated files: ${params.SILVER_GEN}"
-    SILVER_HOST_GEN << "${params.SILVER_GEN}"
-  }
-  if (params.ABLEC_GEN != 'no') {
-    echo "Using existing ableC generated files: ${params.ABLEC_GEN}"
-    SILVER_HOST_GEN << "${params.ABLEC_GEN}"
-  }
-  newenv << "SILVER_HOST_GEN=${SILVER_HOST_GEN.join(':')}"
   
   return newenv
 }

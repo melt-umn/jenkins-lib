@@ -98,10 +98,6 @@ def setProperties(Map args) {
     params << string(name: 'SILVER_BASE',
                      defaultValue: silver.getDefaultSilverBase(),
                      description: 'Silver installation path to use. "silver" is a special value that indicates to check out our own copy')
-    // Also, where to look to find generated files from a successful build of those sources
-    params << string(name: 'SILVER_GEN',
-                     defaultValue: 'no',
-                     description: 'Path to Silver generated files for SILVER_BASE. "no" means not available.')
   }
   
   if (args.ablecBase) {
@@ -109,10 +105,6 @@ def setProperties(Map args) {
     params << string(name: 'ABLEC_BASE',
                      defaultValue: 'ableC',
                      description: 'Path to AbleC host checkout to use. "ableC" is a special value that indicates to check out our own copy')
-    // Also, where to look to find generated files from a successful build of those sources
-    params << string(name: 'ABLEC_GEN',
-                     defaultValue: 'no',
-                     description: 'Path to Silver generated files for ABLEC_BASE. "no" means not available.')
   }
   
   if (args.silverAblecBase) {
