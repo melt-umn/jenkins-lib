@@ -82,7 +82,6 @@ def setProperties(Map args) {
   args = [
     silverBase: false,
     ablecBase: false,
-    silverAblecBase: false,
     overrideJars: false
   ] + args
   def props = []
@@ -105,13 +104,6 @@ def setProperties(Map args) {
     params << string(name: 'ABLEC_BASE',
                      defaultValue: 'ableC',
                      description: 'Path to AbleC host checkout to use. "ableC" is a special value that indicates to check out our own copy')
-  }
-  
-  if (args.silverAblecBase) {
-    // Where to look to find Silver-ableC sources
-    params << string(name: 'SILVER_ABLEC_BASE',
-                     defaultValue: 'silver-ableC',
-                     description: 'Path to Silver-ableC host checkout to use. "silver-ableC" is a special value that indicates to check out and (if needed) build our own copy.')
   }
 
   if (args.overrideJars) {

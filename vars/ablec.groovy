@@ -42,81 +42,6 @@ def resolveAbleC() {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Obtain a path to Silver-ableC to use to build this extension
-//
-// e.g. def silver_ablec_base = ablec.resolveSilverAbleC(silver_base, ablec_base)
-//
-// NOTE: prioritizes BRANCH_NAME over 'develop'
-//
-def resolveSilverAbleC(silver_base, ablec_base) {
-
-  if (params.SILVER_ABLEC_BASE == 'silver-ableC') {
-    echo "Checking out our own copy of silver-ableC"
-
-    checkoutExtension("silver-ableC")
-    // TODO: we *might* wish to melt.annotate if we're checking out a *branch* of silver-ableC, figure out how to check? and maybe consider whether we want that?
-
-    // Try to obtain jars from previous builds of this branch of silver-ableC
-    echo "Trying to get jars from silver-ableC branch ${env.BRANCH_NAME}"
-    String branchJob = "/melt-umn/silver-ableC/${hudson.Util.rawEncode(env.BRANCH_NAME)}"
-    try {
-      // If the last build has artifacts, use those.
-      dir("${env.WORKSPACE}/extensions/silver-ableC") {
-        copyArtifacts(projectName: branchJob, selector: lastCompleted())
-      }
-      melt.annotate("Silver-ableC jar from branch (prev).")
-    } catch (hudson.AbortException exc2) {
-      try {
-        // If there is a last successful build, use those.
-        dir("${env.WORKSPACE}/extensions/silver-ableC") {
-          copyArtifacts(projectName: branchJob, selector: lastSuccessful())
-        }
-        melt.annotate("Silver-ableC jar from branch (successful).")
-      } catch (hudson.AbortException exc3) {
-        // That's okay, just go build it ourselves.
-        echo "Couldn't find Silver-ableC jar from branch, building from scratch"
-
-        // Check out ableC extensions included in default silver-ableC composition
-        def extensions = [
-          "ableC-closure",
-          "ableC-refcount-closure",
-          "ableC-templating",
-          "ableC-string",
-          "ableC-constructor",
-          "ableC-algebraic-data-types",
-          "ableC-template-algebraic-data-types"
-        ]
-        for (ext in extensions) {
-          checkoutExtension(ext)
-        }
-
-        // Build it!
-        def newenv = silver.getSilverEnv(silver_base) + [
-          "ABLEC_BASE=${ablec_base}",
-          "EXTS_BASE=${env.WORKSPACE}/extensions"
-        ]
-        withEnv(newenv) {
-          dir("${env.WORKSPACE}/extensions/silver-ableC") {
-            sh "./bootstrap-compile"
-          }
-        }
-        
-        melt.annotate("Silver-ableC jars from branch (fresh).")
-      }
-    }
-
-    return "${env.WORKSPACE}/extensions/silver-ableC/"
-  }
-  
-  // We assume that the extension dependencies of silver-ableC are already checked out as well
-  echo "Using existing silver-ableC workspace: ${params.SILVER_ABLEC_BASE}"
-  melt.annotate('Custom Silver-ableC.')
-  
-  return params.SILVER_ABLEC_BASE
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//
 // Checkout an extension into the local workspace (into extensions/)
 //
 // NOTE: prioritizes BRANCH_NAME over 'develop'
@@ -150,12 +75,10 @@ def checkoutExtension(ext, url_base="https://github.com/melt-umn") {
 //
 // ./generated/              (empty)
 // ./ableC/                  (if no ABLEC_BASE parameter is set)
-// ./extensions/silver-ableC (if requested and no SILVER_ABLEC_BASE parameter is set)
-// ./extensions/deps         (ditto for silver-ableC dependencies, if silver-ableC jars weren't available)
 // ./extensions/name         (where this extension is checked out)
 // ./extensions/more         (if given)
 //
-def prepareWorkspace(name, usesSilverAbleC=false) {
+def prepareWorkspace(name) {
   
   // Clean Silver-generated files from previous builds in this workspace
   melt.clearGenerated()
@@ -190,11 +113,6 @@ def prepareWorkspace(name, usesSilverAbleC=false) {
   // Get AbleC
   def ablec_base = resolveAbleC()
 
-  // Get Silver-ableC
-  // This happens last, so that if we need to bootstrap silver-ableC
-  // it doesn't get overwritten by extension checkout
-  def silver_ablec_base = usesSilverAbleC? resolveSilverAbleC(silver_base, ablec_base) : null
-
   def newenv = silver.getSilverEnv(silver_base) + [
     "ABLEC_BASE=${ablec_base}",
     "EXTS_BASE=${env.WORKSPACE}/extensions",
@@ -202,10 +120,6 @@ def prepareWorkspace(name, usesSilverAbleC=false) {
     "C_INCLUDE_PATH=/export/scratch/thirdparty/opencilk-2.0.1/lib/clang/14.0.6/include/cilk/include",
     "LIBRARY_PATH=/export/scratch/thirdparty/opencilk-2.0.1/lib/clang/14.0.6/lib/x86_64-unknown-linux-gnu",
   ]
-
-  if (usesSilverAbleC) {
-    newenv << "PATH+silver-ableC=${silver_ablec_base}/support/bin/"
-  }
   
   return newenv
 }
@@ -217,7 +131,7 @@ def prepareWorkspace(name, usesSilverAbleC=false) {
 // extension_name: the name of this extension, the 'scm' object should reference
 //
 def buildNormalExtension(extension_name) {
-  internalBuildExtension(extension_name, false, false)
+  internalBuildExtension(extension_name, false)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -227,37 +141,16 @@ def buildNormalExtension(extension_name) {
 // extension_name: the name of this extension, the 'scm' object should reference
 //
 def buildLibraryExtension(extension_name) {
-  internalBuildExtension(extension_name, true, false)
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// An AbleC extension build requiring silver-ableC. (see: ableC-closure)
-//
-// extension_name: the name of this extension, the 'scm' object should reference
-//
-def buildSilverAbleCExtension(extension_name) {
-  internalBuildExtension(extension_name, false, true)
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// An AbleC extension build with a C library, requiring silver-ableC.
-// (see: ableC-nondeterministic-search)
-//
-// extension_name: the name of this extension, the 'scm' object should reference
-//
-def buildLibrarySilverAbleCExtension(extension_name) {
-  internalBuildExtension(extension_name, true, true)
+  internalBuildExtension(extension_name, true)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Do the above.
 //
-def internalBuildExtension(extension_name, hasLibrary, usesSilverAbleC) {
+def internalBuildExtension(extension_name, hasLibrary) {
 
-  melt.setProperties(silverBase: true, ablecBase: true, silverAblecBase: usesSilverAbleC)
+  melt.setProperties(silverBase: true, ablecBase: true)
 
   melt.trynode(extension_name) {
 
@@ -265,7 +158,7 @@ def internalBuildExtension(extension_name, hasLibrary, usesSilverAbleC) {
 
     stage ("Build") {
 
-      newenv = prepareWorkspace(extension_name, usesSilverAbleC)
+      newenv = prepareWorkspace(extension_name)
 
       withEnv(newenv) {
         dir("extensions/${extension_name}") {
