@@ -162,7 +162,8 @@ def internalBuildExtension(extension_name, hasLibrary) {
 
       withEnv(newenv) {
         dir("extensions/${extension_name}") {
-          make(["clean", "build"])
+          make(["clean"])
+          make(["build"])
         }
       }
     }
