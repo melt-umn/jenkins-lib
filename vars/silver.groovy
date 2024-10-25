@@ -76,7 +76,9 @@ def getSilverEnv(silver_base=null) {
   return [
     "PATH+silver=${silver_base}/support/bin/",
     "PATH+nailgun=:${silver_base}/support/nailgun/",
-    "SILVER_GEN=${GEN}"
+    "SILVER_GEN=${GEN}",
+    // Inject nondeterminism in grammar loading order, to catch build system/env bugs:
+    "SILVER__RANDOMIZE_FILE_ORDER_IN_GRAMMAR=1",
   ]
   // Currently not setting SVFLAGS by default, but we could in the future
 }
