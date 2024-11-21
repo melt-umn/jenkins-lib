@@ -51,21 +51,25 @@ def checkoutExtension(ext, url_base="https://github.com/melt-umn") {
   checkout resolveScm(
     source: git(url: "${url_base}/${ext}.git"),
     targets: [env.BRANCH_NAME, 'develop'],
-    extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "extensions/${ext}"],
+    extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${params.EXTS_BASE}/${ext}"],
                  [$class: 'CleanCheckout']])
    */
   
-  branch = melt.doesBranchExist(env.BRANCH_NAME, ext, url_base)? env.BRANCH_NAME : "develop"
-  echo "Checking out our own copy of extension ${ext} (branch ${branch})"
-  
-  checkout([
-      $class: 'GitSCM',
-      branches: [[name: "*/${branch}"]],
-      doGenerateSubmoduleConfigurations: false,
-      extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "extensions/${ext}"],
-                   [$class: 'CleanCheckout']],
-      submoduleCfg: [],
-      userRemoteConfigs: [[url: "${url_base}/${ext}.git"]]])
+  if (fileExists("${params.EXTS_BASE}/${ext}")) {
+    echo "Extension ${ext} already checked out"
+  } else {
+    branch = melt.doesBranchExist(env.BRANCH_NAME, ext, url_base)? env.BRANCH_NAME : "develop"
+    echo "Checking out our own copy of extension ${ext} (branch ${branch})"
+    
+    checkout([
+        $class: 'GitSCM',
+        branches: [[name: "*/${branch}"]],
+        doGenerateSubmoduleConfigurations: false,
+        extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${params.EXTS_BASE}/${ext}"],
+                    [$class: 'CleanCheckout']],
+        submoduleCfg: [],
+        userRemoteConfigs: [[url: "${url_base}/${ext}.git"]]])
+  }
 
 }
 
@@ -89,7 +93,7 @@ def prepareWorkspace(name) {
       branches: scm.branches,
       doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
       extensions: [
-        [$class: 'RelativeTargetDirectory', relativeTargetDir: "extensions/${name}"],
+        [$class: 'RelativeTargetDirectory', relativeTargetDir: "${params.EXTS_BASE}/${name}"],
         [$class: 'CleanCheckout']
       ],
       submoduleCfg: scm.submoduleCfg,
@@ -97,7 +101,7 @@ def prepareWorkspace(name) {
 
   // Get the dependencies of this extension from its Makefile
   def extensions = []
-  dir ("extensions/${name}") {
+  dir ("${params.EXTS_BASE}/${name}") {
     extensions = sh(returnStdout: true, script: "grep 'EXT_DEPS *=.*' Makefile | sed 's/EXT_DEPS *=//'").tokenize()
   }
   echo "Dependencies: ${extensions}"
@@ -113,9 +117,12 @@ def prepareWorkspace(name) {
   // Get AbleC
   def ablec_base = resolveAbleC()
 
+  // Resolve extensions path
+  def exts_base = params.EXTS_BASE.startsWith('/')? params.EXTS_BASE : "${env.WORKSPACE}/${params.EXTS_BASE}"
+
   def newenv = silver.getSilverEnv(silver_base) + [
     "ABLEC_BASE=${ablec_base}",
-    "EXTS_BASE=${env.WORKSPACE}/extensions",
+    "EXTS_BASE=${exts_base}",
     // cilk headers:
     "C_INCLUDE_PATH=/export/scratch/thirdparty/opencilk-2.0.1/lib/clang/14.0.6/include/cilk/include",
     "LIBRARY_PATH=/export/scratch/thirdparty/opencilk-2.0.1/lib/clang/14.0.6/lib/x86_64-unknown-linux-gnu",
@@ -161,7 +168,7 @@ def internalBuildExtension(extension_name, hasLibrary) {
       newenv = prepareWorkspace(extension_name)
 
       withEnv(newenv) {
-        dir("extensions/${extension_name}") {
+        dir("${params.EXTS_BASE}/${extension_name}") {
           make(["clean"])
           make(["build"])
         }
@@ -171,7 +178,7 @@ def internalBuildExtension(extension_name, hasLibrary) {
     if (hasLibrary) {
       stage ("Libraries") {
         withEnv(newenv) {
-          dir("extensions/${extension_name}") {
+          dir("${params.EXTS_BASE}/${extension_name}") {
             make(["libraries"])
           }
         }
@@ -180,7 +187,7 @@ def internalBuildExtension(extension_name, hasLibrary) {
 
     stage ("Examples") {
       withEnv(newenv) {
-        dir("extensions/${extension_name}") {
+        dir("${params.EXTS_BASE}/${extension_name}") {
           make(["examples"])
         }
       }
@@ -188,7 +195,7 @@ def internalBuildExtension(extension_name, hasLibrary) {
 
     stage ("Modular Analyses") {
       withEnv(newenv) {
-        dir("extensions/${extension_name}") {
+        dir("${params.EXTS_BASE}/${extension_name}") {
           make(["analyses"])
         }
       }
@@ -196,7 +203,7 @@ def internalBuildExtension(extension_name, hasLibrary) {
 
     stage ("Test") {
       withEnv(newenv) {
-        dir("extensions/${extension_name}") {
+        dir("${params.EXTS_BASE}/${extension_name}") {
           make(["test"])
         }
       }

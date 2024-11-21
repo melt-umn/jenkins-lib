@@ -104,6 +104,10 @@ def setProperties(Map args) {
     params << string(name: 'ABLEC_BASE',
                      defaultValue: 'ableC',
                      description: 'Path to AbleC host checkout to use. "ableC" is a special value that indicates to check out our own copy')
+    // Where to check out extensions
+    params << string(name: 'EXTS_BASE',
+                     defaultValue: 'extensions',
+                     description: 'Path to extensions checkout directory. Default is a folder named "extensions" in the current workspace.')
   }
 
   if (args.overrideJars) {
