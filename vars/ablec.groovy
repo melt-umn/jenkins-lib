@@ -55,7 +55,7 @@ def checkoutExtension(ext, url_base="https://github.com/melt-umn") {
                  [$class: 'CleanCheckout']])
    */
   
-  if (fileExists("${params.EXTS_BASE}/${ext}")) {
+  if (params.EXTS_BASE != 'extensions' && fileExists("${params.EXTS_BASE}/${ext}")) {
     echo "Extension ${ext} already checked out"
   } else {
     branch = melt.doesBranchExist(env.BRANCH_NAME, ext, url_base)? env.BRANCH_NAME : "develop"
