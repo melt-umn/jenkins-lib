@@ -169,7 +169,9 @@ def internalBuildExtension(extension_name, hasLibrary) {
 
       withEnv(newenv) {
         dir("${params.EXTS_BASE}/${extension_name}") {
-          make(["clean"])
+          if (params.EXTS_BASE == 'extensions') {
+            make(["deprealclean"])
+          }
           make(["build"])
         }
       }
