@@ -54,23 +54,23 @@ def checkoutExtension(ext, url_base="https://github.com/melt-umn") {
     extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${params.EXTS_BASE}/${ext}"],
                  [$class: 'CleanCheckout']])
    */
-  
-  if (params.EXTS_BASE != 'extensions' && fileExists("${params.EXTS_BASE}/${ext}")) {
-    echo "Extension ${ext} already checked out"
-  } else {
-    branch = melt.doesBranchExist(env.BRANCH_NAME, ext, url_base)? env.BRANCH_NAME : "develop"
-    echo "Checking out our own copy of extension ${ext} (branch ${branch})"
-    
-    checkout([
-        $class: 'GitSCM',
-        branches: [[name: "*/${branch}"]],
-        doGenerateSubmoduleConfigurations: false,
-        extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${params.EXTS_BASE}/${ext}"],
-                    [$class: 'CleanCheckout']],
-        submoduleCfg: [],
-        userRemoteConfigs: [[url: "${url_base}/${ext}.git"]]])
+  lock ("checkout-${ext}") {
+    if (params.EXTS_BASE != 'extensions' && fileExists("${params.EXTS_BASE}/${ext}")) {
+      echo "Extension ${ext} already checked out"
+    } else {
+      branch = melt.doesBranchExist(env.BRANCH_NAME, ext, url_base)? env.BRANCH_NAME : "develop"
+      echo "Checking out our own copy of extension ${ext} (branch ${branch})"
+      
+      checkout([
+          $class: 'GitSCM',
+          branches: [[name: "*/${branch}"]],
+          doGenerateSubmoduleConfigurations: false,
+          extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${params.EXTS_BASE}/${ext}"],
+                      [$class: 'CleanCheckout']],
+          submoduleCfg: [],
+          userRemoteConfigs: [[url: "${url_base}/${ext}.git"]]])
+    }
   }
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -88,16 +88,18 @@ def prepareWorkspace(name) {
   melt.clearGenerated()
   
   // Get this extension
-  checkout([
-      $class: 'GitSCM',
-      branches: scm.branches,
-      doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
-      extensions: [
-        [$class: 'RelativeTargetDirectory', relativeTargetDir: "${params.EXTS_BASE}/${name}"],
-        [$class: 'CleanCheckout']
-      ],
-      submoduleCfg: scm.submoduleCfg,
-      userRemoteConfigs: scm.userRemoteConfigs])
+  lock ("checkout-${name}") {
+    checkout([
+        $class: 'GitSCM',
+        branches: scm.branches,
+        doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
+        extensions: [
+          [$class: 'RelativeTargetDirectory', relativeTargetDir: "${params.EXTS_BASE}/${name}"],
+          [$class: 'CleanCheckout']
+        ],
+        submoduleCfg: scm.submoduleCfg,
+        userRemoteConfigs: scm.userRemoteConfigs])
+  }
 
   // Get the dependencies of this extension from its Makefile
   def extensions = []
