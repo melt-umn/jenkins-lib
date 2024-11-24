@@ -88,18 +88,8 @@ def prepareWorkspace(name) {
   melt.clearGenerated()
   
   // Get this extension
-  lock ("checkout-${name}") {
-    checkout([
-        $class: 'GitSCM',
-        branches: scm.branches,
-        doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
-        extensions: [
-          [$class: 'RelativeTargetDirectory', relativeTargetDir: "${params.EXTS_BASE}/${name}"],
-          [$class: 'CleanCheckout']
-        ],
-        submoduleCfg: scm.submoduleCfg,
-        userRemoteConfigs: scm.userRemoteConfigs])
-  }
+  // TODO: doesn't currently handle extensions outside the melt-umn org
+  checkoutExtension(name)
 
   // Get the dependencies of this extension from its Makefile
   def extensions = []
