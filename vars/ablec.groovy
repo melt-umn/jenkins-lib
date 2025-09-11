@@ -17,7 +17,7 @@ import jenkins.model.Jenkins
 def resolveAbleC() {
 
   if (params.ABLEC_BASE == 'ableC') {
-    branch = melt.doesBranchExist(env.BRANCH_NAME, "ableC")? env.BRANCH_NAME : "develop"
+    def branch = melt.doesBranchExist(env.BRANCH_NAME, "ableC")? env.BRANCH_NAME : "develop"
     echo "Checking out our own copy of ableC (branch ${branch})"
 
     checkout([
@@ -58,7 +58,7 @@ def checkoutExtension(ext, url_base="https://github.com/melt-umn") {
     if (params.EXTS_BASE != 'extensions' && fileExists("${params.EXTS_BASE}/${ext}")) {
       echo "Extension ${ext} already checked out"
     } else {
-      branch = melt.doesBranchExist(env.BRANCH_NAME, ext, url_base)? env.BRANCH_NAME : "develop"
+      def branch = melt.doesBranchExist(env.BRANCH_NAME, ext, url_base)? env.BRANCH_NAME : "develop"
       echo "Checking out our own copy of extension ${ext} (branch ${branch})"
       
       checkout([
